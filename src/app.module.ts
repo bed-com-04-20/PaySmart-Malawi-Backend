@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { RechargesModule } from './recharges/recharges.module';
-import { CustomRechargesController } from './custom_recharges/controllers/custom_recharges/custom_recharges.controller';
-import { CustomRechargesService } from './custom_recharges/services/custom_recharges/custom_recharges.service';
 import { PaymentGatewayModule } from './payment_gateway/payment_gateway.module';
 import { TvSubscriptionsModule } from './tv_subscriptions/tv_subscriptions.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { rechargeEntity } from './Entities/recharge.entity';
+import { RechargeEntity } from './Entities/recharge.entity';
 import { UserModule } from './user/user.module';
+import { CustomRechargesModule } from './custom_recharges/custom_recharges.module';
 
 @Module({
 
@@ -21,14 +19,14 @@ import { UserModule } from './user/user.module';
       username: 'root',
       password: '',
       database: 'paysmart_malawi',
-      entities:[rechargeEntity],
+      entities:[RechargeEntity],
       synchronize: true,
    }),
     
     
     
-    RechargesModule, PaymentGatewayModule, TvSubscriptionsModule, UserModule],
-  controllers: [AppController, CustomRechargesController],
-  providers: [AppService, CustomRechargesService],
+     PaymentGatewayModule, TvSubscriptionsModule, UserModule, CustomRechargesModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
