@@ -7,6 +7,8 @@ import { CustomRechargesService } from './custom_recharges/services/custom_recha
 import { PaymentGatewayModule } from './payment_gateway/payment_gateway.module';
 import { TvSubscriptionsModule } from './tv_subscriptions/tv_subscriptions.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { rechargeEntity } from './Entities/recharge.entity';
+import { UserModule } from './user/user.module';
 
 @Module({
 
@@ -19,13 +21,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       username: 'root',
       password: '',
       database: 'paysmart_malawi',
-      entities:[],
+      entities:[rechargeEntity],
       synchronize: true,
    }),
     
     
     
-    RechargesModule, PaymentGatewayModule, TvSubscriptionsModule],
+    RechargesModule, PaymentGatewayModule, TvSubscriptionsModule, UserModule],
   controllers: [AppController, CustomRechargesController],
   providers: [AppService, CustomRechargesService],
 })
