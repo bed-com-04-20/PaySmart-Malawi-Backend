@@ -6,9 +6,26 @@ import { CustomRechargesController } from './custom_recharges/controllers/custom
 import { CustomRechargesService } from './custom_recharges/services/custom_recharges/custom_recharges.service';
 import { PaymentGatewayModule } from './payment_gateway/payment_gateway.module';
 import { TvSubscriptionsModule } from './tv_subscriptions/tv_subscriptions.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [RechargesModule, PaymentGatewayModule, TvSubscriptionsModule],
+
+
+  imports: [
+   TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: '',
+      database: 'paysmart_malawi',
+      entities:[],
+      synchronize: true,
+   }),
+    
+    
+    
+    RechargesModule, PaymentGatewayModule, TvSubscriptionsModule],
   controllers: [AppController, CustomRechargesController],
   providers: [AppService, CustomRechargesService],
 })
