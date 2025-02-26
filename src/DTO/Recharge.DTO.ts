@@ -7,11 +7,14 @@ export class rechargeDTO{
     @ApiProperty()
     serviceType: 'escom' | 'waterboard'
 
-    @ApiProperty()
-    firebaseUid: string
+    // @ApiProperty()
+    // firebaseUid: string
 
+    // @ApiProperty()
+    // accountIdentifier?: string
+    
     @ApiProperty()
-    accountIdentifier?: string
+    meterNo: number
 
     @ApiProperty()
     amount: number

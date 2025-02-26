@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class RechargeEntity {  // <-- Change to PascalCase
@@ -8,8 +8,10 @@ export class RechargeEntity {  // <-- Change to PascalCase
     @Column()
     serviceType: 'escom' | 'waterboard';
 
+    // @Column()
+    // accountIdentifier: string;
     @Column()
-    accountIdentifier: string;
+    meterNo: number;
 
     @Column('decimal', { precision: 10, scale: 2 })
     amount: number;
@@ -18,8 +20,13 @@ export class RechargeEntity {  // <-- Change to PascalCase
     units: number;
 
     @Column()
-    token: string;
+    token: number;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    // @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    // rechargeDate: Date;
+    @CreateDateColumn()
     rechargeDate: Date;
+
+    @CreateDateColumn()
+    createdAt: Date;
 }
