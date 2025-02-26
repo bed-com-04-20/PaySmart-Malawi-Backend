@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { v4 as uuidv4 } from 'uuid';
 import { PaymentsDto } from 'src/DTO/payment.DTO';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class PaymentWayService {
@@ -35,12 +36,51 @@ export class PaymentWayService {
 
     PaymentsDto.tx_ref = this.generateUniqueTransactionReference();
 
-    const apikey = process.env.PAYCHANGUE_API_KEY;
-    if (!apikey) {
+    const apiKey = process.env.PAYCHANGUE_API_KEY;
+    if (!apiKey) {
         throw new HttpException('PayChanger API key not found', HttpStatus.INTERNAL_SERVER_ERROR)
         
     }
-    
+    const options = {
+        headers :{
+            accept : 'application/json',
+            'content-type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+        }
+    };
+
+    try {
+        const response = await firstValueFrom(
+            this.httpService.post(
+                'https://api.paychangu.com/payment',
+                {
+                    ...PaymentsDto,
+                    callback_url:'${process.env.BASE_URL}',
+                    return_url:'${process.env.BASE_URL}',
+                    currency: 'MWK',
+                    email:'zarilasam99@gmail.com',
+                    description:name,
+                    amount:amount,
+                },
+                options,
+
+            )
+        );
+        const data = response.data;
+
+        if (data.status === 'success') {
+            return {
+                statusCode:200,
+                message:'payment initiated successfully'
+            }
+            
+        } else {
+            
+        }
+        
+    } catch (error) {
+        
+    }
 
  }
 }
