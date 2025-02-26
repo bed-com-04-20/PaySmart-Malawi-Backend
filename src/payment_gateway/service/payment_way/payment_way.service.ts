@@ -104,10 +104,23 @@ export class PaymentWayService {
                 `https://api.paychangu.com/payment/status/${tx_ref}`,{
                     headers: {
                         Authorization: `Bearer ${apiKey}`,
-                    },
-                }
-            )
-        )
+                    },}
+            ),
+           
+        );
+        const data = response.data;
+
+        if (data.status === 200) {
+            return {
+                statusCode: 200,
+                message: 'Payment status fetched successfully',
+                data: data.data,
+            };
+            
+        } else {
+            throw new HttpException(data.message || 'Failed to fetch payment status', HttpStatus.BAD_REQUEST);
+            
+        }
         
       } catch (error) {
         console.error('Error fetching payment status:', error.response?.data || error.message);
@@ -119,4 +132,89 @@ export class PaymentWayService {
       }
   
  }
+ async verifyPayment(tx_ref:string,): Promise<any>{
+    const apiKey = process.env.PAYCHANGUE_API_KEY;
+    if (!apiKey) {
+        throw new HttpException('API key not configured.', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    try {
+        const response = await firstValueFrom(
+            this.httpService.get(
+                `https://api.paychangu.com/verify-payment/${tx_ref}`,{
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        accept: 'application/json',
+                    },
+                }
+            ),
+        );
+        const data = response.data;
+
+        if (data.status === 200) {
+            return {
+                statusCode: 200,
+                message: 'Payment verified successfully',
+                data: data.data,
+            };
+            
+        } else {
+            throw new HttpException(data.message || 'Failed to verify payment', HttpStatus.BAD_REQUEST);
+            
+        }
+        
+    } catch (error) {
+        console.error('Error verifying payment:', error.response?.data || error.message);
+        throw new HttpException(
+          error.response?.data?.message || 'An error occurred while verifying payment.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+        
+    }
+ }
+ async initiatePayout(phoneNumber: string, amount: string): Promise<any> {
+    const mobileMoneyOperatorRefId = this.getMobileOperatorRefId(phoneNumber);
+    const chargeId = this.generateUniqueTransactionReference();
+
+    const apiKey = process.env.PAYCHANGU_API_KEY;
+    if (!apiKey) {
+      throw new HttpException('API key not configured.', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          'https://api.paychangu.com/mobile-money/payouts/initialize',
+          {
+            mobile: phoneNumber,
+            mobile_money_operator_ref_id: mobileMoneyOperatorRefId,
+            amount,
+            charge_id: chargeId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
+
+      if (response.data.status === 'success') {
+        return {
+          statusCode: 200,
+          message: 'Payout initiated successfully.',
+          data: response.data.data,
+        };
+      } else {
+        throw new HttpException('Failed to initiate mobile money payout.', HttpStatus.BAD_REQUEST);
+      }
+    } catch (error) {
+      console.error('Error initiating payout:', error.response?.data || error.message);
+      throw new HttpException(
+        'An error occurred while processing payout.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
