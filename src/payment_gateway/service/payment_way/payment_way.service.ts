@@ -71,16 +71,52 @@ export class PaymentWayService {
         if (data.status === 'success') {
             return {
                 statusCode:200,
-                message:'payment initiated successfully'
-            }
+                message:'payment initiated successfully',
+                data: data.data
+            };
             
         } else {
+            throw new HttpException(data.message || 'payment initiation failed', HttpStatus.BAD_REQUEST);
+            
             
         }
         
     } catch (error) {
-        
-    }
+        console.error('Error processing payment:', error.response?.data || error.message);
+      throw new HttpException(
+        error.response?.data?.message || 'An error occurred while processing payment.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+ }
+  
 
+ }
+ async getPaymentStatus(tx_ref:string):Promise<any>{
+    const apiKey = process.env.PAYCHANGUE_API_KEY;
+
+    if (!apiKey) {
+        throw new HttpException('API key not configured.', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+      try {
+        const response = await firstValueFrom(
+            this.httpService.get(
+                `https://api.paychangu.com/payment/status/${tx_ref}`,{
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                    },
+                }
+            )
+        )
+        
+      } catch (error) {
+        console.error('Error fetching payment status:', error.response?.data || error.message);
+        throw new HttpException(
+          error.response?.data?.message || 'An error occurred while fetching payment status.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+        
+      }
+  
  }
 }
