@@ -21,3 +21,8 @@ export class rechargeDTO{
 
 
 }
+
+export class RechargeHistoryDto{
+    @ApiProperty({ example: 976645657, description: 'Meter number to fetch history' })
+    meterNo: number;
+}

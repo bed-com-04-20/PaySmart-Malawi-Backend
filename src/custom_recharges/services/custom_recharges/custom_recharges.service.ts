@@ -82,4 +82,11 @@ private generateToken(): number {
         };
 
     }
+    async getRechargeHistory(meterNo:number){
+        return this.rechargeRepository.find({
+            where: {meterNo},
+            order: {rechargeDate:'DESC'},
+        })
+
+    }
 }

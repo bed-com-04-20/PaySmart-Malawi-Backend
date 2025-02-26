@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CustomRechargesService } from '../../services/custom_recharges/custom_recharges.service';
 import { rechargeDTO } from 'src/DTO/Recharge.DTO';
 
@@ -19,7 +19,9 @@ export class CustomRechargesController {
        
     }
     @Get('units')
-    @ApiOperation({summary: 'Calculate units'})
+    @ApiOperation({ summary: 'Get estimated units before recharge' })
+    @ApiQuery({ name: 'serviceType', enum: ['escom', 'waterboard'], required: true, description: 'Service Type' })
+    @ApiQuery({ name: 'amount', type: Number, required: true, description: 'Amount to recharge' }) 
 
     getUnits(
         @Query('serviceType') serviceType: 'escom' | 'waterboard',
@@ -29,6 +31,13 @@ export class CustomRechargesController {
         return {serviceType,amount,units}
 
     }
+    @Get('history')
+    @ApiOperation({ summary: 'Get recharge history' })
+    @ApiQuery({ name:'meterNo', type: Number, required: true, description: 'Meter Number' })
+    getRechargeHistory(
+        @Query('meterNo') meterNo: number){
+            return this.CustomRechargesService.getRechargeHistory(Number(meterNo));
+        }
 }
 
 

@@ -24,7 +24,7 @@ export class RechargeEntity {  // <-- Change to PascalCase
 
     // @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     // rechargeDate: Date;
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamp'})
     rechargeDate: Date;
 
     @CreateDateColumn()
