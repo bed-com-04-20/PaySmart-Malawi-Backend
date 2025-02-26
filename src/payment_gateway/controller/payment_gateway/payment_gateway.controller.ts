@@ -4,51 +4,53 @@ import { PaymentWayService } from 'src/payment_gateway/service/payment_way/payme
 
 @Controller('payment-gateway')
 export class PaymentGatewayController {
-    constructor (
-        private readonly PaymentGatewayService: PaymentWayService
-    ){
+    constructor(private readonly paymentGatewayService: PaymentWayService) {}
 
-    }
     @Post('process-payment')
-    async processPayment(@Body() PaymentsDto: PaymentsDto) {
-        return await this.PaymentGatewayService.processPayment(PaymentsDto);
+    async processPayment(@Body() paymentsDto: PaymentsDto) {
+        return await this.paymentGatewayService.processPayment(
+            paymentsDto.amount,
+            paymentsDto.currency,
+            paymentsDto.meterNo,
+            paymentsDto.serviceType,
+            paymentsDto.email,
+            paymentsDto.phoneNumber!,
+            paymentsDto.name,
+            paymentsDto.tx_ref,
+        );
     }
+
     @Get('status/:tx_ref')
-  async getPaymentStatus(@Param('tx_ref') tx_ref: string) {
-    // Retrieves the status of the payment
-    return this.PaymentGatewayService.getPaymentStatus(tx_ref);
-  }
-  @Get('verify/:tx_ref')
-  async verifyPayment(@Param('tx_ref') tx_ref: string) {
-    console.log("Verifying payment with tx_ref:", tx_ref);
-    // Verifies the payment status
-    return this.PaymentGatewayService.verifyPayment(tx_ref);
-  }
-  @Post('cash-out')
-  async initiatePayout(@Body() body: InitiatePayoutDto) {
-    const { phoneNumber, amount } = body;
-    // Initiates the payout process for mobile money
-    return await this.PaymentGatewayService.initiatePayout(phoneNumber, amount);
-  }  
-  @Post('payment-callback')
-  async paymentCallback(@Body() paymentData: any) {
-    console.log('Payment callback data received:', paymentData);
-
-    const { tx_ref, status } = paymentData;
-
-    // Handle the payment status update (e.g., save status to the database, notify the user, etc.)
-    if (status === 'success') {
-      // Handle success
-      console.log(`Payment ${tx_ref} successful`);
-      // You can perform actions like updating order status or notifying the user
-    } else {
-      // Handle failure
-      console.log(`Payment ${tx_ref} failed`);
+    async getPaymentStatus(@Param('tx_ref') tx_ref: string) {
+        return this.paymentGatewayService.getPaymentStatus(tx_ref);
     }
 
-    // Respond back to PayChangu (or any other payment service) to acknowledge receipt of the callback
-    return { message: 'Callback received successfully.' };
-  }
+    @Get('verify/:tx_ref')
+    async verifyPayment(@Param('tx_ref') tx_ref: string) {
+        console.log('Verifying payment with tx_ref:', tx_ref);
+        return this.paymentGatewayService.verifyPayment(tx_ref);
+    }
 
+    @Post('cash-out')
+    async initiatePayout(@Body() body: InitiatePayoutDto) {
+        const { phoneNumber, amount } = body;
+        return await this.paymentGatewayService.initiatePayout(phoneNumber, amount);
+    }
+
+    @Post('payment-callback')
+    async paymentCallback(@Body() paymentData: any) {
+        console.log('Payment callback data received:', paymentData);
+
+        const { tx_ref, status } = paymentData;
+
+        if (status === 'success') {
+            console.log(`Payment ${tx_ref} successful`);
+            // Handle successful payment logic here (e.g., updating order status)
+        } else {
+            console.log(`Payment ${tx_ref} failed`);
+            // Handle failed payment logic here
+        }
+
+        return { message: 'Callback received successfully.' };
+    }
 }
-

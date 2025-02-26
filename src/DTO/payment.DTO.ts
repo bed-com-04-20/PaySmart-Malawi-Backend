@@ -5,13 +5,19 @@ export class PaymentsDto {
     description: 'The payment amount',
     example: '5000',
   })
-  amount?: string;
+  amount: number;
 
   @ApiProperty({
     description: 'The currency of the payment',
     example: 'MWK',
   })
   currency: string;
+
+  @ApiProperty({
+    description: 'The currency of the payment',
+    example: 'MWK',
+  })
+  serviceType: 'escom' | 'waterboard';
 
   @ApiProperty({
     description: 'The email of the payer',
@@ -30,14 +36,21 @@ export class PaymentsDto {
     example: '+265987654321',
     required: false,
   })
-  phone_number?: string;
+  phoneNumber: number;
+
+  @ApiProperty({
+    description: 'The phone number of the payer (optional)',
+    example: '+265987654321',
+    required: false,
+  })
+  meterNo: number;
 
   @ApiProperty({
     description: 'The name of the payer (optional)',
     example: 'John Doe',
     required: false,
   })
-  name?: string;
+  name: string;
 }
 
 export class InitiatePayoutDto {

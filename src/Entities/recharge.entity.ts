@@ -18,6 +18,11 @@ export class RechargeEntity {  // <-- Change to PascalCase
 
     @Column('decimal', { precision: 10, scale: 2 })
     units: number;
+    @Column()
+    tx_ref: string;
+
+    @Column()
+    status: string;
 
     @Column()
     token: number;

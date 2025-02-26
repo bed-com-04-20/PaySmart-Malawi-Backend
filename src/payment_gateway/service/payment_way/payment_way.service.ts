@@ -1,23 +1,30 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import axios from 'axios';
 import { HttpService } from '@nestjs/axios';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { PaymentsDto } from 'src/DTO/payment.DTO';
 import { firstValueFrom } from 'rxjs';
+import { RechargeEntity } from 'src/Entities/recharge.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class PaymentWayService {
+    
     private readonly operatorRefIds = {
         '8': '27494cb5-ba9e-437f-a114-4e7a7686bcca',
         '9': '20be6c20-adeb-4b5b-a7ba-0769820df4fb',
     };
 
     constructor(
+        @InjectRepository(RechargeEntity)
+        private rechargeRepository: Repository<RechargeEntity>,
         private readonly httpService: HttpService,
         private readonly configService: ConfigService
     ) {}
 
-    private getMobileOperatorRefId(mobile: string) {
+    private getMobileOperatorRefId(mobile: string): string {
         const prefix = mobile.charAt(0);
         const refId = this.operatorRefIds[prefix];
 
@@ -31,64 +38,50 @@ export class PaymentWayService {
         return uuidv4();
     }
 
-    async processPayment(paymentsDto: PaymentsDto): Promise<any> {
-        const { amount, name } = paymentsDto;
+    async processPayment(
+        amount: number,
+        currency: string,
+        meterNo: number,
+        serviceType: 'escom' | 'waterboard',
+        email: string,
+        phoneNumber: number,
+        name: string,
+        tx_ref: string
+    ): Promise<any> {
+        const recharge = this.rechargeRepository.create({
+            meterNo,
+            serviceType,
+            amount,
+            tx_ref,
+            status: 'pending',
+        });
 
-        paymentsDto.tx_ref = this.generateUniqueTransactionReference();
-        const apiKey = this.configService.get<string>('PAYCHANGU_API_KEY');
-        const baseUrl = this.configService.get<string>('BASE_URL');
+        await this.rechargeRepository.save(recharge);
 
-        if (!apiKey) {
-            throw new HttpException('PayChangu API key not found', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        const options = {
-            headers: {
-                accept: 'application/json',
-                'content-type': 'application/json',
-                Authorization: `Bearer ${apiKey}`,
-            },
+        const paymentData = {
+            amount,
+            currency,
+            email,
+            name,
+            tx_ref,
+            phone_number: phoneNumber,
         };
 
         try {
-            const response = await firstValueFrom(
-                this.httpService.post(
-                    'https://api.paychangu.com/payment',
-                    {
-                        ...paymentsDto,
-                        callback_url: `${baseUrl}/payment/callback`,
-                        return_url: `${baseUrl}/payment/return`,
-                        currency: 'MWK',
-                        email: 'zarilasam99@gmail.com',
-                        description: name,
-                        amount: amount,
-                    },
-                    options
-                )
+            const response = await axios.post<{ checkout_url: string }>(
+                'https://test-checkout.paychangu.com/api/v1/checkout',
+                paymentData
             );
 
-            const data = response.data;
-            if (data.status === 'success') {
-                return {
-                    statusCode: 200,
-                    message: 'Payment initiated successfully',
-                    data: data.data,
-                };
-            } else {
-                throw new HttpException(data.message || 'Payment initiation failed', HttpStatus.BAD_REQUEST);
-            }
+            return { checkout_url: response.data.checkout_url, tx_ref };
         } catch (error) {
             console.error('Error processing payment:', error.response?.data || error.message);
-            throw new HttpException(
-                error.response?.data?.message || 'An error occurred while processing payment.',
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException('Failed to process payment', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async getPaymentStatus(tx_ref: string): Promise<any> {
         const apiKey = this.configService.get<string>('PAYCHANGU_API_KEY');
-
         if (!apiKey) {
             throw new HttpException('API key not configured.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -100,28 +93,23 @@ export class PaymentWayService {
                 })
             );
 
-            const data = response.data;
-            if (data.status === 'success') {
+            if (response.data.status === 'success') {
                 return {
                     statusCode: 200,
                     message: 'Payment status fetched successfully',
-                    data: data.data,
+                    data: response.data.data,
                 };
             } else {
-                throw new HttpException(data.message || 'Failed to fetch payment status', HttpStatus.BAD_REQUEST);
+                throw new HttpException(response.data.message || 'Failed to fetch payment status', HttpStatus.BAD_REQUEST);
             }
         } catch (error) {
             console.error('Error fetching payment status:', error.response?.data || error.message);
-            throw new HttpException(
-                error.response?.data?.message || 'An error occurred while fetching payment status.',
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException('An error occurred while fetching payment status.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async verifyPayment(tx_ref: string): Promise<any> {
         const apiKey = this.configService.get<string>('PAYCHANGU_API_KEY');
-
         if (!apiKey) {
             throw new HttpException('API key not configured.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -136,22 +124,18 @@ export class PaymentWayService {
                 })
             );
 
-            const data = response.data;
-            if (data.status === 'success') {
+            if (response.data.status === 'success') {
                 return {
                     statusCode: 200,
                     message: 'Payment verified successfully',
-                    data: data.data,
+                    data: response.data.data,
                 };
             } else {
-                throw new HttpException(data.message || 'Failed to verify payment', HttpStatus.BAD_REQUEST);
+                throw new HttpException(response.data.message || 'Failed to verify payment', HttpStatus.BAD_REQUEST);
             }
         } catch (error) {
             console.error('Error verifying payment:', error.response?.data || error.message);
-            throw new HttpException(
-                error.response?.data?.message || 'An error occurred while verifying payment.',
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException('An error occurred while verifying payment.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -195,10 +179,7 @@ export class PaymentWayService {
             }
         } catch (error) {
             console.error('Error initiating payout:', error.response?.data || error.message);
-            throw new HttpException(
-                'An error occurred while processing payout.',
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException('An error occurred while processing payout.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
