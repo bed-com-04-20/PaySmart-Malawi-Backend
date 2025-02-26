@@ -7,11 +7,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RechargeEntity } from './Entities/recharge.entity';
 import { UserModule } from './user/user.module';
 import { CustomRechargesModule } from './custom_recharges/custom_recharges.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
 
 
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
    TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',

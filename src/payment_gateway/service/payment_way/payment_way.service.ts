@@ -33,8 +33,14 @@ export class PaymentWayService {
  async processPayment( PaymentsDto :PaymentsDto):Promise<any>{
     const { amount, name} = PaymentsDto;
 
-    PaymentsDto.tx_ref = this.generateUniqueTransactionReference()
+    PaymentsDto.tx_ref = this.generateUniqueTransactionReference();
+
+    const apikey = process.env.PAYCHANGUE_API_KEY;
+    if (!apikey) {
+        throw new HttpException('PayChanger API key not found', HttpStatus.INTERNAL_SERVER_ERROR)
+        
+    }
     
-    
+
  }
 }
