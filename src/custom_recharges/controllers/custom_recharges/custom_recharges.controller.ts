@@ -32,12 +32,17 @@ export class CustomRechargesController {
 
     }
     @Get('history')
-    @ApiOperation({ summary: 'Get recharge history' })
-    @ApiQuery({ name:'meterNo', type: Number, required: true, description: 'Meter Number' })
-    getRechargeHistory(
-        @Query('meterNo') meterNo: number){
-            return this.CustomRechargesService.getRechargeHistory(Number(meterNo));
-        }
+@ApiOperation({ summary: 'Get recharge history' })
+@ApiQuery({ 
+    name: 'serviceType', 
+    type: String, 
+    required: true, 
+    description: 'Service Type (either "escom" or "waterboard")' 
+})
+getRechargeHistory(@Query('serviceType') serviceType: 'escom' | 'waterboard') {
+    return this.CustomRechargesService.getRechargeHistory(serviceType);
+}
+
 }
 
 

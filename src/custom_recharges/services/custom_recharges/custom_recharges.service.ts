@@ -82,11 +82,11 @@ private generateToken(): number {
         };
 
     }
-    async getRechargeHistory(meterNo:number){
+    async getRechargeHistory(serviceType: 'escom' | 'waterboard'): Promise<RechargeEntity[]> {
         return this.rechargeRepository.find({
-            where: {meterNo},
-            order: {rechargeDate:'DESC'},
-        })
-
+            where: { serviceType },
+            order: { rechargeDate: 'DESC' },
+        });
     }
+    
 }
