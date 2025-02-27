@@ -55,9 +55,9 @@ export class PaymentWayService {
             tx_ref,
             status: 'pending',
         });
-
+    
         await this.rechargeRepository.save(recharge);
-
+    
         const paymentData = {
             amount,
             currency,
@@ -65,21 +65,37 @@ export class PaymentWayService {
             name,
             tx_ref,
             phone_number: phoneNumber,
+            callback_url: 'https://your-callback-url.com/callback',// i need to create a callback URL here
+            return_url: 'https://your-return-url.com'
         };
-
+    
         try {
+            // Ensure the secret key is set in the environment variables
+            const secretKey = process.env.PAYCHANGU_API_KEY;
+    
+            if (!secretKey) {
+                console.error("Missing PAYCHANGU_SECRET_KEY in environment variables.");
+                throw new HttpException('Payment service configuration error', HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+    
             const response = await axios.post<{ checkout_url: string }>(
-                'https://test-checkout.paychangu.com/api/v1/checkout',
-                paymentData
+                'https://api.paychangu.com/payment',
+                paymentData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${secretKey}`,  // Include secret key here
+                    }
+                }
             );
-
+    
             return { checkout_url: response.data.checkout_url, tx_ref };
         } catch (error) {
             console.error('Error processing payment:', error.response?.data || error.message);
             throw new HttpException('Failed to process payment', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
+    
     async getPaymentStatus(tx_ref: string): Promise<any> {
         const apiKey = this.configService.get<string>('PAYCHANGU_API_KEY');
         if (!apiKey) {
