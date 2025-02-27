@@ -46,8 +46,9 @@ export class PaymentWayService {
         email: string,
         phoneNumber: number,
         name: string,
-        tx_ref: string
+       
     ): Promise<any> {
+        const tx_ref = this.generateUniqueTransactionReference();
         const recharge = this.rechargeRepository.create({
             meterNo,
             serviceType,
@@ -55,7 +56,7 @@ export class PaymentWayService {
             tx_ref,
             status: 'pending',
         });
-    
+       
         await this.rechargeRepository.save(recharge);
     
         const paymentData = {
@@ -83,12 +84,13 @@ export class PaymentWayService {
                 paymentData,
                 {
                     headers: {
+                         
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${secretKey}`,  // Include secret key here
                     }
                 }
             );
-    
+            console.log("✅ PayChangu Response:", response.data);
             return { checkout_url: response.data.checkout_url, tx_ref };
         } catch (error) {
             console.error('Error processing payment:', error.response?.data || error.message);
