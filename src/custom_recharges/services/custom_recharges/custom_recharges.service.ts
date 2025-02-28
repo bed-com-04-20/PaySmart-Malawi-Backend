@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RechargeEntity } from 'src/Entities/recharge.entity';
 import { Repository } from 'typeorm';
@@ -34,6 +34,25 @@ export class CustomRechargesService {
 private generateToken(): number {
     return Math.floor(100000 + Math.random() * 900000); // Ensures a 6-digit number
   }
+
+  async verifyPayment(tx_ref: string) :Promise<any>{
+    try {
+        const response = await axios.get(`https://api.paychangu.com/payment/verify/${tx_ref}`,{
+            headers:{
+                Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`
+            },
+        });
+
+        return response.data;
+        
+    } catch (error) {
+        console.error('Error verifying payment:', error.response?.data || error.message);
+        return null
+
+        
+    }
+
+  }
   
 
     // async processRecharge(
@@ -57,9 +76,17 @@ private generateToken(): number {
 
     // }
     async processRecharge( dto: rechargeDTO) : Promise<{meterNo: number, amount: number, units: number, token: number, rechargeDate: Date}> {
-        const {meterNo, amount, serviceType} = dto;
-        const units = this.calculateUnits(serviceType, amount);
-        const token = this.generateToken();
+        const {meterNo, amount, serviceType, tx_ref} = dto;
+         const units = this.calculateUnits(serviceType, amount,);
+         const token = this.generateToken();
+
+        //verifying payments
+        const paymentStatus = await this.verifyPayment(tx_ref);
+
+        if(!paymentStatus || paymentStatus.status !== 'success'){
+            throw new HttpException('Payment verification failed',
+                 HttpStatus.BAD_REQUEST);
+        }
 
         const recharge = this.rechargeRepository.create({
             serviceType,

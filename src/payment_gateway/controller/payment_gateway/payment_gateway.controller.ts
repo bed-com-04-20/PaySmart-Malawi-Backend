@@ -16,7 +16,7 @@ export class PaymentGatewayController {
             paymentsDto.email,
             paymentsDto.phoneNumber!,
             paymentsDto.name,
-            paymentsDto.tx_ref,
+            
         );
     }
 
