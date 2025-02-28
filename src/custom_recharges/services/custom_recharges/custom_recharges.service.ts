@@ -4,6 +4,7 @@ import { RechargeEntity } from 'src/Entities/recharge.entity';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
 import { rechargeDTO } from 'src/DTO/Recharge.DTO';
+import axios from 'axios';
 
 @Injectable()
 export class CustomRechargesService {
@@ -37,7 +38,7 @@ private generateToken(): number {
 
   async verifyPayment(tx_ref: string) :Promise<any>{
     try {
-        const response = await axios.get(`https://api.paychangu.com/payment/verify/${tx_ref}`,{
+        const response = await axios.get(`https://api.paychangu.com/verify-payment/${tx_ref}`,{
             headers:{
                 Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`
             },
@@ -77,8 +78,7 @@ private generateToken(): number {
     // }
     async processRecharge( dto: rechargeDTO) : Promise<{meterNo: number, amount: number, units: number, token: number, rechargeDate: Date}> {
         const {meterNo, amount, serviceType, tx_ref} = dto;
-         const units = this.calculateUnits(serviceType, amount,);
-         const token = this.generateToken();
+        
 
         //verifying payments
         const paymentStatus = await this.verifyPayment(tx_ref);
@@ -87,6 +87,10 @@ private generateToken(): number {
             throw new HttpException('Payment verification failed',
                  HttpStatus.BAD_REQUEST);
         }
+
+        // calculate units
+        const units = this.calculateUnits(serviceType, amount,);
+        const token = this.generateToken();
 
         const recharge = this.rechargeRepository.create({
             serviceType,
