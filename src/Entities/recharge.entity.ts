@@ -1,16 +1,14 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class RechargeEntity {  // <-- Change to PascalCase
+export class RechargeEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ type: 'enum', enum: ['escom', 'waterboard'] })
     serviceType: 'escom' | 'waterboard';
 
-    // @Column()
-    // accountIdentifier: string;
-    @Column()
+    @Column({ type: 'bigint' })  // Ensures large numbers are handled correctly
     meterNo: number;
 
     @Column('decimal', { precision: 10, scale: 2 })
@@ -18,18 +16,17 @@ export class RechargeEntity {  // <-- Change to PascalCase
 
     @Column('decimal', { precision: 10, scale: 2 })
     units: number;
+
     @Column()
     tx_ref: string;
 
     @Column()
     status: string;
 
-    @Column()
+    @Column({ type: 'bigint' }) // Use `bigint` for 15-digit token numbers
     token: number;
 
-    // @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    // rechargeDate: Date;
-    @CreateDateColumn({type: 'timestamp'})
+    @CreateDateColumn({ type: 'timestamp' })
     rechargeDate: Date;
 
     @CreateDateColumn()

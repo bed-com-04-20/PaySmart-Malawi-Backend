@@ -2,8 +2,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import axios from 'axios';
-import * as crypto from 'crypto';
-
 import { RechargeEntity } from 'src/Entities/recharge.entity';
 import { rechargeDTO } from 'src/DTO/Recharge.DTO';
 
@@ -14,40 +12,29 @@ export class CustomRechargesService {
         private readonly rechargeRepository: Repository<RechargeEntity>,
     ) {}
 
-    /**
-     * Calculates the number of units based on the service type and amount.
-     */
-     calculateUnits(serviceType: 'escom' | 'waterboard', amount: number): number {
-        const rates: Record<'escom' | 'waterboard', number> = {
-            escom: 1 / 200,
-            waterboard: 1 / 100,
-        };
-        return amount * rates[serviceType] || 0;
+    calculateUnits(serviceType: 'escom' | 'waterboard', amount: number): number {
+        const rates = { escom: 1 / 200, waterboard: 1 / 100 };
+        return amount * (rates[serviceType] || 0);
     }
 
-    /**
-     * Generates a random 6-digit recharge token.
-     */
-    private generateToken(): number {
-        return Math.floor(100000 + Math.random() * 900000);
+    generateToken(): number {
+        return Math.floor(100000000000000 + Math.random() * 900000000000000); // 15-digit number
     }
 
-    /**
-     * Verifies payment status from PayChangu.
-     */
-     async verifyPayment(tx_ref: string): Promise<any> {
+    private async verifyPayment(tx_ref: string): Promise<void> {
         try {
-            const response = await axios.get<{ status: string; data: any }>(`https://api.paychangu.com/verify-payment/${tx_ref}`, {
-                headers: {
-                    Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
-                },
-            });
+            const response = await axios.get<{ status: string }>( // <-- Explicitly define response type
+                `https://api.paychangu.com/verify-payment/${tx_ref}`, 
+                {
+                    headers: {
+                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
+                    },
+                }
+            );
 
             if (response.data.status !== 'success') {
                 throw new HttpException('Payment verification failed', HttpStatus.BAD_REQUEST);
             }
-
-            return response.data;
         } catch (error) {
             console.error('Error verifying payment:', error.response?.data || error.message);
             throw new HttpException(
@@ -57,32 +44,28 @@ export class CustomRechargesService {
         }
     }
 
-    /**
-     * Processes a recharge transaction.
-     */
-    async processRecharge(dto: rechargeDTO): Promise<{
-        meterNo: number;
-        amount: number;
-        units: number;
-        token: number;
-        rechargeDate: Date;
-    }> {
-        const { meterNo, amount, serviceType, tx_ref } = dto;
+    async processEscomRecharge(dto: rechargeDTO) {
+        return this.processRecharge(dto, 'escom');
+    }
 
-        // Verify payment before proceeding
+    async processWaterboardRecharge(dto: rechargeDTO) {
+        return this.processRecharge(dto, 'waterboard');
+    }
+
+     async processRecharge(dto: rechargeDTO, serviceType: 'escom' | 'waterboard') {
+        const { meterNo, amount, tx_ref } = dto;
+
         await this.verifyPayment(tx_ref);
 
-        // Calculate units and generate a token
         const units = this.calculateUnits(serviceType, amount);
-        const token = this.generateToken();
+        const token = this.generateToken(); // Now a number
 
-        // Save the recharge transaction
         const recharge = this.rechargeRepository.create({
             serviceType,
             meterNo,
             amount,
             units,
-            token,
+            token, // Now correctly stored as a number
         });
 
         const savedRecharge = await this.rechargeRepository.save(recharge);
@@ -91,14 +74,12 @@ export class CustomRechargesService {
             meterNo: savedRecharge.meterNo,
             amount: savedRecharge.amount,
             units,
-            token,
+            token: savedRecharge.token, // Ensure it remains a number
             rechargeDate: savedRecharge.rechargeDate,
+            serviceType,
         };
     }
 
-    /**
-     * Retrieves recharge history filtered by service type.
-     */
     async getRechargeHistory(serviceType: 'escom' | 'waterboard'): Promise<RechargeEntity[]> {
         return this.rechargeRepository.find({
             where: { serviceType },
