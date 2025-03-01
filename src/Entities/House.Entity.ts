@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { housePaymentEntity } from "./house_payments.entity";
 
 @Entity()
 
@@ -15,5 +16,9 @@ export class houseEntity{
     @Column({default:0})
     balance: number;
 
+
+    
+    @OneToMany(() => housePaymentEntity, payment => payment.house)
+    payments: housePaymentEntity[]
 
 }
