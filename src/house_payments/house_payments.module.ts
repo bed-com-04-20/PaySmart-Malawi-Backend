@@ -3,6 +3,7 @@ import { HousePaymentsController } from './controllers/house_payments/house_paym
 import { HousePaymentsService } from './services/house_payments/house_payments.service';
 
 @Module({
+  
   controllers: [HousePaymentsController],
   providers: [HousePaymentsService]
 })

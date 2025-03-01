@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { HouseManagementModule } from './house_management/house_management.module';
 import { houseEntity } from './Entities/House.Entity';
 import { HousePaymentsModule } from './house_payments/house_payments.module';
+import { housePaymentEntity } from './Entities/house_payments.entity';
 
 @Module({
 
@@ -26,7 +27,7 @@ import { HousePaymentsModule } from './house_payments/house_payments.module';
       username: 'root',
       password: '',
       database: 'paysmart_malawi',
-      entities:[RechargeEntity,houseEntity],
+      entities:[RechargeEntity,houseEntity,housePaymentEntity],
       synchronize: true,
    }),
     
