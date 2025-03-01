@@ -10,11 +10,7 @@ export class CustomRechargesController {
         private readonly customRechargesService: CustomRechargesService
     ) {}
 
-    /*** 
-     * -----------------
-     * ESCOM ENDPOINTS
-     * -----------------
-    ***/
+   
 
     @Post('escom/recharge')
     @ApiOperation({ summary: 'Process an ESCOM recharge' })

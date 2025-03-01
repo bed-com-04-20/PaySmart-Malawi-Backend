@@ -8,6 +8,8 @@ import { RechargeEntity } from './Entities/recharge.entity';
 import { UserModule } from './user/user.module';
 import { CustomRechargesModule } from './custom_recharges/custom_recharges.module';
 import { ConfigModule } from '@nestjs/config';
+import { HouseManagementModule } from './house_management/house_management.module';
+import { houseEntity } from './Entities/House.Entity';
 
 @Module({
 
@@ -23,13 +25,13 @@ import { ConfigModule } from '@nestjs/config';
       username: 'root',
       password: '',
       database: 'paysmart_malawi',
-      entities:[RechargeEntity],
+      entities:[RechargeEntity,houseEntity],
       synchronize: true,
    }),
     
     
     
-     PaymentGatewayModule, TvSubscriptionsModule, UserModule, CustomRechargesModule],
+     PaymentGatewayModule, TvSubscriptionsModule, UserModule, CustomRechargesModule, HouseManagementModule],
   controllers: [AppController],
   providers: [AppService],
 })
