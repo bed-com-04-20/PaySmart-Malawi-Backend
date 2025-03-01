@@ -10,6 +10,7 @@ import { CustomRechargesModule } from './custom_recharges/custom_recharges.modul
 import { ConfigModule } from '@nestjs/config';
 import { HouseManagementModule } from './house_management/house_management.module';
 import { houseEntity } from './Entities/House.Entity';
+import { HousePaymentsModule } from './house_payments/house_payments.module';
 
 @Module({
 
@@ -31,7 +32,7 @@ import { houseEntity } from './Entities/House.Entity';
     
     
     
-     PaymentGatewayModule, TvSubscriptionsModule, UserModule, CustomRechargesModule, HouseManagementModule],
+     PaymentGatewayModule, TvSubscriptionsModule, UserModule, CustomRechargesModule, HouseManagementModule, HousePaymentsModule],
   controllers: [AppController],
   providers: [AppService],
 })
