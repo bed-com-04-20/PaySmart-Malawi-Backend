@@ -6,7 +6,7 @@ import { houseEntity } from "./House.Entity";
 export class housePaymentEntity{
     
     @PrimaryGeneratedColumn()
-    paymentId: number;
+    houseId: number;
     
     @ManyToOne(() => houseEntity, house => house.payments, {onDelete: 'CASCADE'})
     house: houseEntity;
@@ -22,6 +22,9 @@ export class housePaymentEntity{
 
     @Column({ default: 'pending' })
     status: string; // pending, successful, failed
+
+    @Column({ default:0})
+    balance: number
 
     @CreateDateColumn()
     paymentDate: Date;
