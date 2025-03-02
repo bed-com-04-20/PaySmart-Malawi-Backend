@@ -9,11 +9,11 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class HousePaymentsService {
     constructor (@InjectRepository(houseEntity)
-    private readonly housepaymentsRepository: Repository<houseEntity>,
+    private readonly houseRepository: Repository<houseEntity>,
 
     @InjectRepository(housePaymentEntity)
 
-    private readonly housePaymentRepository: Repository<housePaymentEntity>){
+    private readonly housePayment: Repository<housePaymentEntity>){
 
        
     }
@@ -38,7 +38,7 @@ export class HousePaymentsService {
     async processHousePayment(dto:PaymentDTO) {
         const { houseId, amount, payerName, tx_ref } = dto;
 
-        const house = await this.housePaymentRepository.findOne({where: {houseId}});
+        const house = await this.housePayment.findOne({where: {houseId}});
         if (!house) {
             throw new HttpException('House not found', HttpStatus.NOT_FOUND);
         }
@@ -48,7 +48,23 @@ export class HousePaymentsService {
             throw new HttpException('Invalid payment', HttpStatus.BAD_REQUEST);
         }
 
-        house.balance -= amount
+        house.balance -= amount;
+
+        if(house.balance< 0) house.balance = 0;
+
+        await this.houseRepository.save(house);
+
+        const payment = this.housePayment.create({
+            house,
+            amountPaid: amount,
+            payerName,
+            tx_ref,
+            status: 'successful',
+          
+        });
+        await this.housePayment.save(payment)
+
+        return {message : 'payment successful', remainingBalance: house.balance }
 
     }
 }
