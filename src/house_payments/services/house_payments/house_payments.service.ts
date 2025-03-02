@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { verify } from 'crypto';
 import { houseEntity } from 'src/Entities/House.Entity';
@@ -16,9 +16,9 @@ export class HousePaymentsService {
 
        
     }
-    async verifyPayment(tx_ref:string):Promise<void>{
+    async verifyPayment(tx_ref:string):Promise<boolean>{
         try {
-            const response = await axios.get(
+            const response = await axios.get<{status:string}>(
                `https://api.paychangu.com/verify-payment/${tx_ref}`,
                {
                 headers: {
@@ -27,9 +27,14 @@ export class HousePaymentsService {
                 },
                } 
             );
-          
+          return response.data.status === 'success'
         } catch (error) {
+            console.error('Payment verification error:', error.response?.data || error.message);
+            throw new HttpException('Payment verification failed', HttpStatus.BAD_REQUEST);
             
         }
+    }
+    async processHousePayment() {
+        
     }
 }
