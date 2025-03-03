@@ -13,7 +13,7 @@ export class houseEntity{
     @Column()
     rentAmount: number;
 
-    @Column({default:0})
+    @Column({default:50000})
     balance: number;
 
 
