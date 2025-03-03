@@ -30,11 +30,7 @@ import { housePaymentEntity } from './Entities/house_payments.entity';
       entities:[RechargeEntity,houseEntity,housePaymentEntity],
       synchronize: true,
    }),
-    
-    
-    
-     PaymentGatewayModule, TvSubscriptionsModule, UserModule, CustomRechargesModule, HouseManagementModule, HousePaymentsModule],
-  controllers: [AppController],
-  providers: [AppService],
-})
+     PaymentGatewayModule, TvSubscriptionsModule, UserModule, CustomRechargesModule, HouseManagementModule, HousePaymentsModule]}
+)
+
 export class AppModule {}
