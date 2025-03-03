@@ -1,3 +1,4 @@
+
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CustomRechargesService } from '../../services/custom_recharges/custom_recharges.service';
@@ -63,3 +64,6 @@ export class CustomRechargesController {
         return this.customRechargesService.getRechargeHistory('waterboard');
     }
 }
+
+export class CustomRechargesController {}
+
