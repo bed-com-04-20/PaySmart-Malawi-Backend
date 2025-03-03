@@ -208,8 +208,30 @@ export class PaymentWayService {
 
         const recharge = await this.rechargeRepository.findOne({ where: {tx_ref}  });
 
-        if () {
-            
+        if (!recharge) {
+            console.error('transaction not found: ${tx_ref}');
+            throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
+
+        }
+        recharge.status = status === 'success' ? 'completed' : 'failed';
+        recharge.amount = amount;
+        recharge.meterNo = meterNo;
+        recharge.rechargeDate = rechargeDate;
+        recharge.token = token;
+        recharge.units = units;
+        recharge.serviceType = serviceType;
+
+        await this.rechargeRepository.save(recharge);
+
+        return {
+            meterNo,
+            amount,
+            units,
+            status,
+            tx_ref,
+            rechargeDate,
+            token,
+            serviceType
         }
     }
 }
