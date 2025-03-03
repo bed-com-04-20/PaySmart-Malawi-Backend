@@ -200,4 +200,6 @@ export class PaymentWayService {
             throw new HttpException('An error occurred while processing payout.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async handlePaymentCallback(paymentData: any): Promise<any> {}
 }
