@@ -201,5 +201,15 @@ export class PaymentWayService {
         }
     }
 
-    async handlePaymentCallback(paymentData: any): Promise<any> {}
+    async handlePaymentCallback(paymentData: any): Promise<any> {
+        const { tx_ref, status, amount,meterNo,rechargeDate, token, units, serviceType } = paymentData;
+
+        console.log("payment callback data received:", paymentData);
+
+        const recharge = await this.rechargeRepository.findOne({ where: {tx_ref}  });
+
+        if () {
+            
+        }
+    }
 }
