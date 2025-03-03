@@ -37,20 +37,8 @@ export class PaymentGatewayController {
         return await this.paymentGatewayService.initiatePayout(phoneNumber, amount);
     }
 
-    @Post('payment-callback')
-    async paymentCallback(@Body() paymentData: any) {
-        console.log('Payment callback data received:', paymentData);
-
-        const { tx_ref, status } = paymentData;
-
-        if (status === 'success') {
-            console.log(`Payment ${tx_ref} successful`);
-            // Handle successful payment logic here (e.g., updating order status)
-        } else {
-            console.log(`Payment ${tx_ref} failed`);
-            // Handle failed payment logic here
-        }
-
-        return { message: 'Callback received successfully.' };
+   @Post()
+    async handlePaymentCallback(@Body() paymentData: any) {
+        return this.paymentGatewayService.handlePaymentCallback(paymentData);
     }
 }
