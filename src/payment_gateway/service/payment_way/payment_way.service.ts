@@ -66,8 +66,8 @@ export class PaymentWayService {
             name,
             tx_ref,
             phone_number: phoneNumber,
-            callback_url: 'https://your-callback-url.com/callback',// i need to create a callback URL here
-            return_url: 'https://your-return-url.com'
+            callback_url: 'http://localhost:3000/custom-recharges/escom/recharge',// i need to create a callback URL here
+            return_url: 'https://your-frontend.com/payment-success'
         };
     
         try {
