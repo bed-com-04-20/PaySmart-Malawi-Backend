@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { InitiatePayoutDto, PaymentsDto } from 'src/DTO/payment.DTO';
-import { PaymentWayService } from 'src/payment_gateway/service/payment_way/payment_way.service';
+import { Body, Controller, Get, Param, Post, Query, Headers } from "@nestjs/common";
+import { InitiatePayoutDto, PaymentsDto } from "src/DTO/payment.DTO";
+import { PaymentWayService } from "src/payment_gateway/service/payment_way/payment_way.service";
 
 @Controller('payment-gateway')
 export class PaymentGatewayController {
@@ -16,7 +16,6 @@ export class PaymentGatewayController {
             paymentsDto.email,
             paymentsDto.phoneNumber!,
             paymentsDto.name,
-            
         );
     }
 
@@ -37,8 +36,16 @@ export class PaymentGatewayController {
         return await this.paymentGatewayService.initiatePayout(phoneNumber, amount);
     }
 
-   @Post()
-    async handlePaymentCallback(@Body() paymentData: any) {
+  
+
+    @Post('custom-recharges/escom/recharge')
+    async handlePaymentCallback(@Body() paymentData: any, @Query() query: any, @Headers() headers: Record<string, any>) {
+        console.log("Payment callback received with body:", paymentData);
+        console.log("Query parameters:", query);
+        console.log("Headers:", headers);
         return this.paymentGatewayService.handlePaymentCallback(paymentData);
     }
+
+
+    
 }
