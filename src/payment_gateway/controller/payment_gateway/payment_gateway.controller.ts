@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Param, Post, Query, Headers } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Headers, Req, HttpException, HttpStatus } from "@nestjs/common";
+import { request } from "axios";
 import { InitiatePayoutDto, PaymentsDto } from "src/DTO/payment.DTO";
 import { PaymentWayService } from "src/payment_gateway/service/payment_way/payment_way.service";
+import * as crypto from 'crypto';
 
 @Controller('payment-gateway')
 export class PaymentGatewayController {
@@ -38,14 +40,43 @@ export class PaymentGatewayController {
 
   
 
-    @Post('custom-recharges/escom/recharge')
-    async handlePaymentCallback(@Body() paymentData: any, @Query() query: any, @Headers() headers: Record<string, any>) {
-        console.log("Payment callback received with body:", paymentData);
-        console.log("Query parameters:", query);
-        console.log("Headers:", headers);
-        return this.paymentGatewayService.handlePaymentCallback(paymentData);
-    }
+    // @Post('custom-recharges/escom/recharge')
+    // async handlePaymentCallback(@Body() paymentData: any, @Query() query: any, @Headers() headers: Record<string, any>) {
+    //     console.log("Payment callback received with body:", paymentData);
+    //     console.log("Query parameters:", query);
+    //     console.log("Headers:", headers);
+    //     return this.paymentGatewayService.handlePaymentCallback(paymentData);
+    // }
+     @Post('custom-recharges/escom/recharge')
+     async handlePaymentCallback(
+        @Req() request:any,
+        @Headers('signature') signature: string
+     ){
 
+        try {
+            const rawBody = request.rawBody;
+
+            if (!signature) {
+
+                throw new HttpException('missing signature header', HttpStatus.BAD_REQUEST)
+ }
+    const webhookSecret = process.env.PAYCHANGU_WEBHOOK_SECRET || '';
+
+    const computedSignature = crypto
+         .createHmac('sha256', webhookSecret)
+         .update(rawBody)
+         .digest('hex')
+
+         if ( computedSignature !== signature ) {
+            throw new HttpException('invalid signature', HttpStatus.BAD_REQUEST)
+            
+         }
+            
+        } catch (error) {
+            
+        }
+
+     }
 
     
 }
