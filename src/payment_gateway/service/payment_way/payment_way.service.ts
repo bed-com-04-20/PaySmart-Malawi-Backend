@@ -241,8 +241,20 @@ export class PaymentWayService {
         // };
         try {
             const { tx_ref, status, amount, meterNo, rechargeDate, token, units, serviceType } = paymentData;
-            
+
+            if ( status !== 'success' ) {
+                console.warn('payment failed for tx_ref: ${tx_ref}' );
+                return { message: 'payment failed', tx_ref}
+                
+            }
+            console.log('payment successful for Meter No: ${meterNo}');
+            console.log('Amount: ${amount}, units: ${units}, Token: ${token}');
+
+            return{ message: 'payment successful', tx_ref, amount, meterNo,rechargeDate, token, units, serviceType};
         } catch (error) {
+            console.error('Error processing payment callback', error);
+
+            throw new Error('Error processing payment callback')
             
         }
     }
