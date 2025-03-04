@@ -71,6 +71,9 @@ export class PaymentGatewayController {
             throw new HttpException('invalid signature', HttpStatus.BAD_REQUEST)
             
          }
+
+         const webhook = JSON.parse(rawBody)
+         console.log('Received valid webhook :', webhook);
             
         } catch (error) {
             
