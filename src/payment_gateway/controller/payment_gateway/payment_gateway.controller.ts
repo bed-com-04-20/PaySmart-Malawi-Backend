@@ -72,10 +72,16 @@ export class PaymentGatewayController {
             
          }
 
-         const webhook = JSON.parse(rawBody)
-         console.log('Received valid webhook :', webhook);
+         const webhookData = JSON.parse(rawBody)
+         console.log('Received valid webhook :', webhookData);
+
+         // Step 6: Process the webhook data (You can store in DB or trigger actions)
+
+         return {message :'webhook processed successfully', data:webhookData}
             
         } catch (error) {
+            console.error('Error processing webhook', error.message)
+            throw new HttpException('internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
             
         }
 
