@@ -66,8 +66,8 @@ export class PaymentWayService {
             name,
             tx_ref,
             phone_number: phoneNumber,
-            callback_url: 'https://your-callback-url.com/callback',// i need to create a callback URL here
-            return_url: 'https://your-return-url.com'
+            callback_url: 'https://6e31-41-70-44-187.ngrok-free.app/custom-recharges/escom/recharge',
+            return_url: 'https://your-frontend.com/payment-success'
         };
     
         try {
@@ -200,4 +200,63 @@ export class PaymentWayService {
             throw new HttpException('An error occurred while processing payout.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async handlePaymentCallback(paymentData: any): Promise<any> {
+        // Destructuring paymentData to extract necessary fields
+       
+    
+        // console.log("Payment callback data received:", paymentData);
+    
+        // // Check if the transaction exists in the database using tx_ref
+        // const recharge = await this.rechargeRepository.findOne({ where: { tx_ref } });
+    
+        // // If no matching transaction is found, throw an error
+        // if (!recharge) {
+        //     console.error(`Transaction not found: ${tx_ref}`);
+        //     throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
+        // }
+    
+        // // Update the recharge details based on the received payment status
+        // recharge.status = status === 'success' ? 'completed' : 'failed';
+        // recharge.amount = amount;
+        // recharge.meterNo = meterNo;
+        // recharge.rechargeDate = rechargeDate;
+        // recharge.token = token;
+        // recharge.units = units;
+        // recharge.serviceType = serviceType;
+    
+        // // Save the updated recharge data back to the database
+        // await this.rechargeRepository.save(recharge);
+    
+        // // Return the relevant callback data
+        // return {
+        //     meterNo,
+        //     amount,
+        //     units,
+        //     status,
+        //     tx_ref,
+        //     rechargeDate,
+        //     token,
+        //     serviceType
+        // };
+        try {
+            const { tx_ref, status, amount, meterNo, rechargeDate, token, units, serviceType } = paymentData;
+
+            if ( status !== 'success' ) {
+                console.warn('payment failed for tx_ref: ${tx_ref}' );
+                return { message: 'payment failed', tx_ref}
+                
+            }
+            console.log('payment successful for Meter No: ${meterNo}');
+            console.log('Amount: ${amount}, units: ${units}, Token: ${token}');
+
+            return{ message: 'payment successful', tx_ref, amount, meterNo,rechargeDate, token, units, serviceType};
+        } catch (error) {
+            console.error('Error processing payment callback', error);
+
+            throw new Error('Error processing payment callback')
+            
+        }
+    }
+    
 }
