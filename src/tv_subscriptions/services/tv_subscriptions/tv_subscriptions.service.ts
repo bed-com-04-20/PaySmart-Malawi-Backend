@@ -42,7 +42,7 @@ export class TvSubscriptionsService {
        }
        const subscription = this.tvSubscriptionRepository.create({
               accountNumber,
-              packages:packageData,
+              packages:[packageData],
               tx_ref:transactionRef,
               status:'success'
          })
