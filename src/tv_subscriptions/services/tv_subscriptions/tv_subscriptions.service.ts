@@ -4,6 +4,7 @@ import { CreateSubscriptionDTO } from 'src/DTO/createSubcription.dto';
 import { TvPackageEntity } from 'src/Entities/TVpackages.entity';
 import { TVsubscription } from 'src/Entities/TVsubscription.entity';
 import { Repository } from 'typeorm';
+import axios from 'axios';
 
 @Injectable()
 export class TvSubscriptionsService {
@@ -33,9 +34,9 @@ export class TvSubscriptionsService {
        const transactionRef = `TX-${Date.now()}`;
 
 
-       const paymentResponse = await this.initatePayment(packageData.price, transactionRef) as { success: boolean };
+       const paymentResponse = await this.initiatePayment(packageData.price, transactionRef) as { success: boolean };
        if(!paymentResponse.success){
-           throw new HttpException('payment failed', HttpStatus.BAD_REQUEST);
+           throw new HttpException('payment succes', HttpStatus.BAD_REQUEST);
 
            
 
@@ -59,28 +60,46 @@ export class TvSubscriptionsService {
 
        
     }
-    async initatePayment(amount:number, transactionRef:string){
+    async initiatePayment(amount: number, transactionRef: string): Promise<any> {
         try {
-            const response = await axios.post(
-              'https://api.paychangu.com/initiate-payment',
-              {
+            // Construct payment data
+            const paymentData = {
                 tx_ref: transactionRef,
                 amount,
                 currency: 'MWK',
-              },
-              {
-                headers: { Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}` },
-              },
-            );
-      
-            return response.data; // Assuming API returns { success: true/false }
-          } catch (error) {
-            console.error('Payment error:', error.response?.data || error.message);
-            return { success: false };
-          }
-        }
-        
-    }
+                callback_url: 'https://your-website.com/payment-callback', // Add your callback URL here
+            };
+    
+            // Send request to PayChangu API
+            interface PaymentResponse {
+                checkout_url?: string;
+            }
 
+            const response = await axios.post<PaymentResponse>(
+                'https://api.paychangu.com/payment',
+                paymentData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`, // Ensure your API key is loaded correctly
+                        'Content-Type': 'application/json', // Explicit content type
+                    },
+                },
+            );
+    
+            if (response.data && response.data.checkout_url) {
+                // Return success with checkout URL if available
+                return { success: true, checkout_url: response.data.checkout_url };
+            } else {
+                // Handle case where response doesn't return the expected data
+                console.error('Invalid response format:', response.data);
+                return { success: false, message: 'Invalid response from payment API' };
+            }
+        } catch (error) {
+            // Handle any errors from the request
+            console.error('Payment error:', error.response?.data || error.message);
+            return { success: false, message: error.response?.data || error.message };
+        }
+    }
+}    
     
 
