@@ -31,5 +31,56 @@ export class TvSubscriptionsService {
        }
 
        const transactionRef = `TX-${Date.now()}`;
+
+
+       const paymentResponse = await this.initatePayment(packageData.price, transactionRef) as { success: boolean };
+       if(!paymentResponse.success){
+           throw new HttpException('payment failed', HttpStatus.BAD_REQUEST);
+
+           
+
+       }
+       const subscription = this.tvSubscriptionRepository.create({
+              accountNumber,
+              packages:packageData,
+              tx_ref:transactionRef,
+              status:'success'
+         })
+         await this.tvSubscriptionRepository.save(subscription);
+
+         return {
+                message:'subscription successful',
+                transactionRef,
+                package:packageData.name,
+                accountNumber,
+                price:packageData.price
+         }
+
+
+       
     }
-}
+    async initatePayment(amount:number, transactionRef:string){
+        try {
+            const response = await axios.post(
+              'https://api.paychangu.com/initiate-payment',
+              {
+                tx_ref: transactionRef,
+                amount,
+                currency: 'MWK',
+              },
+              {
+                headers: { Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}` },
+              },
+            );
+      
+            return response.data; // Assuming API returns { success: true/false }
+          } catch (error) {
+            console.error('Payment error:', error.response?.data || error.message);
+            return { success: false };
+          }
+        }
+        
+    }
+
+    
+

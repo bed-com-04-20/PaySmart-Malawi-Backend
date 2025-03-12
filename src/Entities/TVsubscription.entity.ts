@@ -10,7 +10,8 @@ export class TVsubscription {
     packages: TvPackageEntity[];
 
     @Column()
-    accountNumber: string;
+    accountNumber: number;
+    ;
 
     @Column()
     tx_ref: string;
