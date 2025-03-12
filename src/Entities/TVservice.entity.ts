@@ -12,7 +12,7 @@ export class TVServiceEntity{
     @ApiProperty()
     name: string;
 
-    @OneToMany(() => TvPackageEntity, (pkg) => pkg.service )
+    @OneToMany(() => TvPackageEntity, (pkg) => pkg.services )
     packages: TvPackageEntity[];
 
     
