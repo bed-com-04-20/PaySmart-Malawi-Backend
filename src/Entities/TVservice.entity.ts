@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { TvPackageEntity } from "./TVpackages.entity";
 
 @Entity()
 
@@ -10,5 +11,9 @@ export class TVServiceEntity{
     @Column()
     @ApiProperty()
     name: string;
+
+    @OneToMany(() => TvPackageEntity, (pkg) => pkg.service )
+    packages: TvPackageEntity[];
+
     
 }
