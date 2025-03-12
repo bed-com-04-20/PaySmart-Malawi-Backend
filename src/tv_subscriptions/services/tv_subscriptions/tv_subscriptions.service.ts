@@ -36,7 +36,7 @@ export class TvSubscriptionsService {
 
        const paymentResponse = await this.initiatePayment(packageData.price, transactionRef) as { success: boolean };
        if(!paymentResponse.success){
-           throw new HttpException('payment succes', HttpStatus.BAD_REQUEST);
+           return {message: 'subscription succesifull'}
 
            
 
