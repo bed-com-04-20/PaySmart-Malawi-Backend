@@ -16,8 +16,8 @@ export class TvSubscriptionsService {
         @InjectRepository(TvPackageEntity)
         private readonly tvPackageRepository: Repository<TvPackageEntity>
     ){}
-    async listPackages(serviceId:number){
-        return this.tvPackageRepository.find({ where:{id:serviceId}});
+    async listPackages() :Promise<TvPackageEntity[]> {
+        return this.tvPackageRepository.find();
     }
 
     async processSubscription(dto:CreateSubscriptionDTO)
