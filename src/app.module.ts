@@ -8,13 +8,14 @@ import { RechargeEntity } from './Entities/recharge.entity';
 import { UserModule } from './user/user.module';
 import { CustomRechargesModule } from './custom_recharges/custom_recharges.module';
 import { ConfigModule } from '@nestjs/config';
-import { HouseManagementModule } from './house_management/house_management.module';
-import { houseEntity } from './Entities/House.Entity';
-import { HousePaymentsModule } from './house_payments/house_payments.module';
+
+
+
 import { housePaymentEntity } from './Entities/house_payments.entity';
 import { TVServiceEntity } from './Entities/TVservice.entity';
 import { TvPackageEntity } from './Entities/TVpackages.entity';
 import { TVsubscription } from './Entities/TVsubscription.entity';
+import { HousePaymentsModule } from './house-payments/house-payments.module';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { TVsubscription } from './Entities/TVsubscription.entity';
       username: 'postgres',
       password: 'tech-nest265',
       database: 'paysmart_malawi',
-      entities: [RechargeEntity, houseEntity, housePaymentEntity,TVServiceEntity,TvPackageEntity,TVsubscription ],
+      entities: [RechargeEntity, housePaymentEntity,TVServiceEntity,TvPackageEntity,TVsubscription ],
       synchronize: true, // Set to false in production
     }),
     // TypeOrmModule.forRoot({
@@ -52,8 +53,8 @@ import { TVsubscription } from './Entities/TVsubscription.entity';
     TvSubscriptionsModule,
     UserModule,
     CustomRechargesModule,
-    HouseManagementModule,
     HousePaymentsModule,
+   
   ],
 })
 export class AppModule {}
