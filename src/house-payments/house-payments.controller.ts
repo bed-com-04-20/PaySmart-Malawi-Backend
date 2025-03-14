@@ -1,34 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { HousePaymentsService } from './house-payments.service';
-import { CreateHousePaymentDto } from './dto/create-house-payment.dto';
-import { UpdateHousePaymentDto } from './dto/update-house-payment.dto';
+import { Controller, Post, Get, Param, Body } from "@nestjs/common";
+import { HousePaymentsService } from "./house-payments.service";
 
-@Controller('house-payments')
-export class HousePaymentsController {
-  constructor(private readonly housePaymentsService: HousePaymentsService) {}
 
-  @Post()
-  create(@Body() createHousePaymentDto: CreateHousePaymentDto) {
-    return this.housePaymentsService.create(createHousePaymentDto);
-  }
+@Controller("payments")
+export class HousePaymentController {
+    constructor(private readonly housePaymentService: HousePaymentsService) {}
 
-  @Get()
-  findAll() {
-    return this.housePaymentsService.findAll();
-  }
+    @Post("record/:houseId")
+    async recordPayment(
+        @Param("houseId") houseId: number,
+        @Body("amountPaid") amountPaid: number,
+        
+    ) {
+        return this.housePaymentService.recordPayment(houseId, amountPaid);
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.housePaymentsService.findOne(+id);
-  }
+    @Get("history/:houseId")
+    async getPaymentHistory(@Param("houseId") houseId: number) {
+        return this.housePaymentService.getPaymentHistory(houseId);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHousePaymentDto: UpdateHousePaymentDto) {
-    return this.housePaymentsService.update(+id, updateHousePaymentDto);
-  }
+    @Get("balance/:houseId")
+    async getRemainingBalance(@Param("houseId") houseId: number) {
+        return this.housePaymentService.getRemainingBalance(houseId);
+    }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.housePaymentsService.remove(+id);
-  }
+    @Get("house/:deltaNumber")
+    async getHouseByDelta(@Param("deltaNumber") deltaNumber: number) {
+        return this.housePaymentService.getHouseByDelta(deltaNumber);
+    }
 }
