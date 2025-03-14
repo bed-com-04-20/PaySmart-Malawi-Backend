@@ -3,7 +3,7 @@ import { HousePaymentsService } from "./house-payments.service";
 
 
 @Controller("payments")
-export class HousePaymentController {
+export class HousePaymentsController {
     constructor(private readonly housePaymentService: HousePaymentsService) {}
 
     @Post("record/:houseId")
