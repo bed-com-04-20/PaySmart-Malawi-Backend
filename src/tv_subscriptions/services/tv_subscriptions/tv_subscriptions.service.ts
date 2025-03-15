@@ -36,7 +36,7 @@ export class TvSubscriptionsService {
 
        const paymentResponse = await this.initiatePayment(packageData.price, transactionRef) as { success: boolean };
        if(!paymentResponse.success){
-           return {message: 'subscription succesifull'}
+           return {message: 'invalid payment'}
 
            
 
