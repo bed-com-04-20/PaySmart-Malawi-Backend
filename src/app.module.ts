@@ -12,8 +12,9 @@ import { TVServiceEntity } from './Entities/TVservice.entity';
 import { TvPackageEntity } from './Entities/TVpackages.entity';
 import { TVsubscription } from './Entities/TVsubscription.entity';
 import { HousePaymentsModule } from './house-payments/house-payments.module';
-import { HousePayment } from './house-payments/entities/installmentPayment';
-import { InstallmentPayment } from './house-payments/entities/house-payment.entity';
+import { HousePayment } from './house-payments/entities/house-payment.entity';
+import { InstallmentPayment } from './house-payments/entities/installmentPayment';
+
 
 @Module({
   imports: [
