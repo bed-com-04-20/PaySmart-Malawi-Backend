@@ -1,19 +1,14 @@
 import { Controller, Post, Get, Param, Body, BadRequestException } from "@nestjs/common";
 import { HousePaymentsService } from "./house-payments.service";
+import { CreateHousePaymentDto } from "./dto/create-house-payment.dto";
 
 @Controller("payments")
 export class HousePaymentsController {
     constructor(private readonly housePaymentService: HousePaymentsService) {}
 
-    @Post("record/:houseId")
-    async recordPayment(
-        @Param("houseId") houseId: number,
-        @Body("amountPaid") amountPaid: number,
-    ) {
-        if (amountPaid <= 0) {
-            throw new BadRequestException("Amount paid must be greater than 0.");
-        }
-        return this.housePaymentService.recordPayment(houseId, amountPaid);
+    @Post("record")
+    async recordPayment(@Body() createHousePaymentDto: CreateHousePaymentDto) {
+        return this.housePaymentService.recordPayment(createHousePaymentDto);
     }
 
     @Get("history/:houseId")

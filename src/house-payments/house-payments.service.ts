@@ -13,6 +13,16 @@ import { InstallmentPayment } from './entities/installmentPayment';
 import { CreateHousePaymentDto } from './dto/create-house-payment.dto';
 import { UpdateHousePaymentDto } from './dto/update-house-payment.dto';
 
+interface PaymentResponse {
+  success: boolean;
+  checkout_url?: string;
+  message?: string;
+  data?: {
+    checkout_url?: string;
+  };
+}
+
+
 @Injectable()
 export class HousePaymentsService {
   constructor (
@@ -26,68 +36,91 @@ export class HousePaymentsService {
   /**
    * Records a house payment and initiates a transaction with PayChangu
    */
-  async recordPayment(houseId: number, amountPaid: number) {
+  async recordPayment(dto: CreateHousePaymentDto) {
+    const { houseId, amount } = dto;
+
+    // Find the house payment record by packageId (or houseId if that is what you need)
     const house = await this.housePaymentRepository.findOne({ where: { id: houseId } });
 
     if (!house) {
-      throw new NotFoundException('House not found');
+        throw new HttpException('House not found', HttpStatus.NOT_FOUND);
     }
 
-    if (!process.env.PAYCHANGU_API_KEY) {
-      throw new HttpException("Payment API key is missing", HttpStatus.INTERNAL_SERVER_ERROR);
+    // Validate amount
+    if (!amount || amount <= 0) {
+        throw new HttpException('Amount must be greater than zero', HttpStatus.BAD_REQUEST);
     }
 
-    const transactionRef = `HOUSE-${houseId}-${Math.floor(Date.now() / 1000)}`;
+    // Update the house payment record
+    house.paidAmount += amount;
+    house.remainingBalance -= amount;
+    house.isFullyPaid = house.remainingBalance === 0;
 
-    const paymentData = {
-      tx_ref: transactionRef,
-      amount: amountPaid,
-      currency: "MWK",
-      callback_url: "https://your-backend.com/payments/callback",
-      return_url: "https://your-frontend.com/payment-success",
+    // Save the updated house record
+    await this.housePaymentRepository.save(house);
+
+    // Generate a transaction reference
+    const transactionRef = `TX-${Date.now()}`;
+
+    // Initiate payment process
+    const paymentResponse = await this.initiatePayment(amount, transactionRef);
+    if (!paymentResponse.success) {
+        throw new HttpException(paymentResponse.message || 'Payment failed', HttpStatus.BAD_REQUEST);
+    }
+
+    return {
+        message: 'Payment successful',
+        transactionRef,
+        paidAmount: house.paidAmount,
+        remainingBalance: house.remainingBalance,
+        checkoutUrl: paymentResponse.checkout_url
     };
+}
 
-    try {
-      const response = await axios.post<{ checkout_url: string }>(
-        "https://api.paychangu.com/payment",
-        paymentData,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
+// Function to interact with PayChangu API
+async initiatePayment(amount: number, transactionRef: string): Promise<PaymentResponse> {
+  try {
+      // Construct payment data
+      const paymentData = {
+          tx_ref: transactionRef,
+          amount,
+          currency: 'MWK', // Malawian Kwacha
+          callback_url: 'https://your-website.com/payment-callback', // Add your callback URL
+      };
+
+      // Send request to PayChangu API
+      const response = await axios.post<PaymentResponse>(
+          'https://api.paychangu.com/payment',
+          paymentData,
+          {
+              headers: {
+                  Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`, // Ensure your API key is loaded correctly
+                  'Content-Type': 'application/json', // Explicit content type
+              },
+          }
       );
 
-      if (!response.data || !response.data.checkout_url) {
-        throw new HttpException("Invalid payment gateway response", HttpStatus.INTERNAL_SERVER_ERROR);
+      // Log the entire response for debugging purposes
+      console.log('Payment API Response:', response.data);
+
+      // Access checkout_url from the nested structure
+      const checkoutUrl = response.data?.data?.checkout_url;
+
+      // Check if the checkout_url exists
+      if (checkoutUrl) {
+          return { success: true, checkout_url: checkoutUrl };
+      } else {
+          // Handle case where response doesn't return the expected data
+          console.error('Invalid response format:', response.data);
+          return { success: false, message: 'Invalid response from payment API' };
       }
-
-      // Record the installment payment
-      const installmentPayment = this.installmentPaymentRepository.create({
-        house,
-        amountPaid,
-      });
-      await this.installmentPaymentRepository.save(installmentPayment);
-
-      // Update the house payment record
-      house.paidAmount += amountPaid;
-      if (house.paidAmount >= house.price) {
-        house.isFullyPaid = true;
-      }
-      await this.housePaymentRepository.save(house);
-
-      return {
-        message: "Payment recorded successfully",
-        checkout_url: response.data.checkout_url, // Payment URL for the user
-        remainingBalance: house.price - house.paidAmount,
-      };
-      
-    } catch (error) {
-      console.error("PayChangu Payment Error:", error.response?.data || error.message);
-      throw new HttpException("Payment processing failed", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  } catch (error) {
+      // Handle any errors from the request
+      console.error('Payment error:', error.response?.data || error.message);
+      return { success: false, message: error.response?.data || error.message };
   }
+}
+
 
   /**
    * Retrieves the remaining balance for a house
