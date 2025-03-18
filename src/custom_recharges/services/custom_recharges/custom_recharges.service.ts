@@ -89,14 +89,13 @@ export class CustomRechargesService {
 
     // Common recharge processing logic for both services
     async processRecharge(dto: rechargeDTO, serviceType: 'escom' | 'waterboard') {
-        const { meterNo, amount, tx_ref } = dto;
-
-        // Initiate Payment (Optional: You can choose to wait for confirmation)
-        const paymentResponse = await this.initiatePayment(amount, tx_ref);
-
+        const { meterNo, amount } = dto;
+    
+        // Calculate units and generate token
         const units = this.calculateUnits(serviceType, amount);
         const token = this.generateToken();
-
+    
+        // Create recharge entry
         const recharge = this.rechargeRepository.create({
             serviceType,
             meterNo,
@@ -104,9 +103,10 @@ export class CustomRechargesService {
             units,
             token,
         });
-
+    
+        // Save to DB (tx_ref will be auto-generated)
         const savedRecharge = await this.rechargeRepository.save(recharge);
-
+    
         return {
             meterNo: savedRecharge.meterNo,
             amount: savedRecharge.amount,
@@ -114,9 +114,10 @@ export class CustomRechargesService {
             token: savedRecharge.token,
             rechargeDate: savedRecharge.rechargeDate,
             serviceType,
-            paymentUrl: paymentResponse.checkout_url, // Include payment URL in the response
+            tx_ref: savedRecharge.tx_ref, // Include auto-generated tx_ref in response
         };
     }
+    
 
     // Fetches recharge history for a specific service type
     async getRechargeHistory(serviceType: 'escom' | 'waterboard'): Promise<RechargeEntity[]> {

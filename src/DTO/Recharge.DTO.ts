@@ -4,8 +4,8 @@ import { ApiProperty } from "@nestjs/swagger"
 
 export class rechargeDTO{
 
-    @ApiProperty()
-    serviceType: 'escom' | 'waterboard'
+    // @ApiProperty()
+    // serviceType: 'escom' | 'waterboard'
 
     // @ApiProperty()
     // firebaseUid: string
@@ -19,8 +19,8 @@ export class rechargeDTO{
     @ApiProperty()
     amount: number
 
-    @ApiProperty()
-    tx_ref : string
+    // @ApiProperty()
+    // tx_ref : string
 
 
 }
