@@ -25,7 +25,8 @@ export class CustomRechargesService {
     private async verifyPayment(tx_ref: string): Promise<void> {
         try {
             const response = await axios.get<{ status: string }>( // <-- Explicitly define response type
-                `https://api.paychangu.com/verify-payment/${tx_ref}`, 
+                `https://api.paychangu.com/verify-payment/{tx_ref}
+`, 
                 {
                     headers: {
                         Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
