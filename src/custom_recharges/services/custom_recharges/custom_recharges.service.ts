@@ -118,6 +118,15 @@ import axios from 'axios';
 import { RechargeEntity } from 'src/Entities/recharge.entity';
 import { rechargeDTO } from 'src/DTO/Recharge.DTO';
 
+interface PaymentResponse {
+    success: boolean;
+    checkout_url?: string;
+    message?: string;
+    data?: {
+      checkout_url?: string;
+    };
+  }
+
 @Injectable()
 export class CustomRechargesService {
     constructor(
@@ -134,33 +143,75 @@ export class CustomRechargesService {
         return Math.floor(100000000000000 + Math.random() * 900000000000000); // 15-digit number
     }
 
-    private async initiatePayment(amount: number, tx_ref: string): Promise<string> {
+    // private async initiatePayment(amount: number, tx_ref: string): Promise<string> {
+    //     try {
+    //         const response = await axios.post<{ payment_url: string }>(
+    //             'https://api.paychangu.com/initiate-payment',
+    //             {
+    //                 amount,
+    //                 tx_ref,
+    //                 currency: 'MWK',
+    //                 redirect_url: 'https://your-app.com/payment-success', // Customize as needed
+    //             },
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
+    //                     'Content-Type': 'application/json',
+    //                 },
+    //             }
+    //         );
+
+    //         return response.data.payment_url; // Return payment link if needed
+    //     } catch (error) {
+    //         console.error('Error initiating payment:', error.response?.data || error.message);
+    //         throw new HttpException(
+    //             'Payment initiation failed',
+    //             HttpStatus.BAD_REQUEST
+    //         );
+    //     }
+    // }
+    async initiatePayment(amount: number, transactionRef: string): Promise<PaymentResponse> {
         try {
-            const response = await axios.post<{ payment_url: string }>(
-                'https://api.paychangu.com/initiate-payment',
-                {
-                    amount,
-                    tx_ref,
-                    currency: 'MWK',
-                    redirect_url: 'https://your-app.com/payment-success', // Customize as needed
-                },
+            // Construct payment data
+            const paymentData = {
+                tx_ref: transactionRef,
+                amount,
+                currency: 'MWK', // Malawian Kwacha
+                callback_url: 'https://your-website.com/payment-callback', // Add your callback URL
+            };
+      
+            // Send request to PayChangu API
+            const response = await axios.post<PaymentResponse>(
+                'https://api.paychangu.com/payment',
+                paymentData,
                 {
                     headers: {
-                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
-                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`, // Ensure your API key is loaded correctly
+                        'Content-Type': 'application/json', // Explicit content type
                     },
                 }
             );
-
-            return response.data.payment_url; // Return payment link if needed
+      
+            // Log the entire response for debugging purposes
+            console.log('Payment API Response:', response.data);
+      
+            // Access checkout_url from the nested structure
+            const checkoutUrl = response.data?.data?.checkout_url;
+      
+            // Check if the checkout_url exists
+            if (checkoutUrl) {
+                return { success: true, checkout_url: checkoutUrl };
+            } else {
+                // Handle case where response doesn't return the expected data
+                console.error('Invalid response format:', response.data);
+                return { success: false, message: 'Invalid response from payment API' };
+            }
         } catch (error) {
-            console.error('Error initiating payment:', error.response?.data || error.message);
-            throw new HttpException(
-                'Payment initiation failed',
-                HttpStatus.BAD_REQUEST
-            );
+            // Handle any errors from the request
+            console.error('Payment error:', error.response?.data || error.message);
+            return { success: false, message: error.response?.data || error.message };
         }
-    }
+      }
 
     async processEscomRecharge(dto: rechargeDTO) {
         return this.processRecharge(dto, 'escom');
