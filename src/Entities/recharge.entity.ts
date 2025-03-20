@@ -18,14 +18,16 @@ export class RechargeEntity {
     @Column('decimal', { precision: 10, scale: 2 })
     units: number;
 
-    @Column({ unique: true })
-    tx_ref: string;
+   
+    @Column({ default: 'pending' }) // Change 'pending' to your preferred default status
+     status: string;
 
-    @Column()
-    status: string;
 
-    @Column({ type: 'bigint' })
+    @Column({ type: 'bigint', nullable:true })
     token: number;
+    @Column({ default: 'pending' }) 
+    paymentStatus: string; // pending, paid, failed
+
 
     @CreateDateColumn({ type: 'timestamp' })
     rechargeDate: Date;
@@ -33,8 +35,5 @@ export class RechargeEntity {
     @CreateDateColumn()
     createdAt: Date;
 
-    @BeforeInsert()
-    generateTxRef() {
-        this.tx_ref = `PSM-${uuidv4()}`; // Auto-generate tx_ref before inserting into DB
-    }
+    
 }

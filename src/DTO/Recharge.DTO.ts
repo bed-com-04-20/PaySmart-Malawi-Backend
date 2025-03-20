@@ -19,8 +19,7 @@ export class rechargeDTO{
     @ApiProperty()
     amount: number
 
-    // @ApiProperty()
-    // tx_ref : string
+   
 
 
 }

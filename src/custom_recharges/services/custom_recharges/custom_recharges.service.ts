@@ -34,11 +34,12 @@ export class CustomRechargesService {
     }
 
     // Initiates payment by interacting with PayChangu API
-    async initiatePayment(amount: number, transactionRef: string): Promise<PaymentResponse> {
+        
+            async initiatePayment(amount: number, ): Promise<PaymentResponse> {
         try {
             // Construct payment data
             const paymentData = {
-                tx_ref: transactionRef,
+                
                 amount,
                 currency: 'MWK', // Malawian Kwacha
                 callback_url: 'https://your-website.com/payment-callback', // Add your callback URL
@@ -91,20 +92,20 @@ export class CustomRechargesService {
     async processRecharge(dto: rechargeDTO, serviceType: 'escom' | 'waterboard') {
         const { meterNo, amount } = dto;
     
-        // Calculate units and generate token
+        // Initiate Payment (Optional: You can choose to wait for confirmation)
+        const paymentResponse = await this.initiatePayment(amount);
+    
         const units = this.calculateUnits(serviceType, amount);
         const token = this.generateToken();
     
-        // Create recharge entry
         const recharge = this.rechargeRepository.create({
             serviceType,
             meterNo,
             amount,
             units,
-            token,
+            token, // no tx_ref here
         });
     
-        // Save to DB (tx_ref will be auto-generated)
         const savedRecharge = await this.rechargeRepository.save(recharge);
     
         return {
@@ -114,7 +115,7 @@ export class CustomRechargesService {
             token: savedRecharge.token,
             rechargeDate: savedRecharge.rechargeDate,
             serviceType,
-            tx_ref: savedRecharge.tx_ref, // Include auto-generated tx_ref in response
+            paymentUrl: paymentResponse.checkout_url, // Include payment URL in the response
         };
     }
     
