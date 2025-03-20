@@ -144,4 +144,10 @@ export class CustomRechargesService {
             serviceType: transaction.serviceType,
         };
     }
+    async getRechargeHistory(serviceType: 'escom' | 'waterboard'): Promise<RechargeEntity[]> {
+        return this.rechargeRepository.find({
+            where: { serviceType },
+            order: { rechargeDate: 'DESC' },
+        });
+    }
 }
