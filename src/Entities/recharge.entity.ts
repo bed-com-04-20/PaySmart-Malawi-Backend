@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class RechargeEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid') // Using UUID for better transaction tracking
+    id: string;
 
     @Column({ type: 'enum', enum: ['escom', 'waterboard'] })
     serviceType: 'escom' | 'waterboard';
@@ -15,19 +15,17 @@ export class RechargeEntity {
     @Column('decimal', { precision: 10, scale: 2 })
     amount: number;
 
-    @Column('decimal', { precision: 10, scale: 2 })
-    units: number;
+    @Column('decimal', { precision: 10, scale: 2, default: 0 })
+    units: number; // Set default 0 to prevent errors before payment
 
-   
-    @Column({ default: 'pending' }) // Change 'pending' to your preferred default status
-     status: string;
+    @Column({ type: 'enum', enum: ['pending', 'completed'], default: 'pending' }) 
+    status: string; // Tracks recharge processing state
 
+    @Column({ type: 'enum', enum: ['pending', 'paid', 'failed'], default: 'pending' }) 
+    paymentStatus: string; // Tracks payment status
 
-    @Column({ type: 'bigint', nullable:true })
-    token: number;
-    @Column({ default: 'pending' }) 
-    paymentStatus: string; // pending, paid, failed
-
+    @Column({ type: 'bigint', nullable: true })
+    token: number; // Will be generated only after successful payment
 
     @CreateDateColumn({ type: 'timestamp' })
     rechargeDate: Date;
@@ -35,5 +33,8 @@ export class RechargeEntity {
     @CreateDateColumn()
     createdAt: Date;
 
-    
+    @BeforeInsert()
+    generateId() {
+        this.id = uuidv4(); // Automatically assigns a UUID before inserting
+    }
 }

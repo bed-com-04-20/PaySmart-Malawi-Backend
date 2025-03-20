@@ -5,7 +5,6 @@ import axios from 'axios';
 import { RechargeEntity } from 'src/Entities/recharge.entity';
 import { rechargeDTO } from 'src/DTO/Recharge.DTO';
 
-// Export PaymentResponse interface so it can be used in other files
 export interface PaymentResponse {
     success: boolean;
     checkout_url?: string;
@@ -30,101 +29,119 @@ export class CustomRechargesService {
 
     // Generate a 15-digit token
     generateToken(): number {
-        return Math.floor(100000000000000 + Math.random() * 900000000000000); // 15-digit number
+        return Math.floor(100000000000000 + Math.random() * 900000000000000);
     }
 
-    // Initiates payment by interacting with PayChangu API
-        
-            async initiatePayment(amount: number, ): Promise<PaymentResponse> {
+    // Initiates payment via PayChangu
+    async initiatePayment(amount: number, transactionId: string): Promise<PaymentResponse> {
         try {
-            // Construct payment data
             const paymentData = {
-                
                 amount,
-                currency: 'MWK', // Malawian Kwacha
-                callback_url: 'https://your-website.com/payment-callback', // Add your callback URL
+                currency: 'MWK',
+                callback_url: `https://your-server.com/api/recharges/payment-callback/${transactionId}`, // Callback for this transaction
             };
 
-            // Send request to PayChangu API
             const response = await axios.post<PaymentResponse>(
                 'https://api.paychangu.com/payment',
                 paymentData,
                 {
                     headers: {
-                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`, // Ensure your API key is loaded correctly
-                        'Content-Type': 'application/json', // Explicit content type
+                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
+                        'Content-Type': 'application/json',
                     },
                 }
             );
 
-            // Log the entire response for debugging purposes
             console.log('Payment API Response:', response.data);
 
-            // Access checkout_url from the nested structure
             const checkoutUrl = response.data?.data?.checkout_url;
-
-            // Check if the checkout_url exists
             if (checkoutUrl) {
                 return { success: true, checkout_url: checkoutUrl };
             } else {
-                // Handle case where response doesn't return the expected data
                 console.error('Invalid response format:', response.data);
                 return { success: false, message: 'Invalid response from payment API' };
             }
         } catch (error) {
-            // Handle any errors from the request
             console.error('Payment error:', error.response?.data || error.message);
             return { success: false, message: error.response?.data || error.message };
         }
     }
 
-    // Processes an Escom recharge request
-    async processEscomRecharge(dto: rechargeDTO) {
-        return this.processRecharge(dto, 'escom');
-    }
-
-    // Processes a Waterboard recharge request
-    async processWaterboardRecharge(dto: rechargeDTO) {
-        return this.processRecharge(dto, 'waterboard');
-    }
-
-    // Common recharge processing logic for both services
+    // Step 1: Initiate Recharge - Returns Payment URL Only
     async processRecharge(dto: rechargeDTO, serviceType: 'escom' | 'waterboard') {
         const { meterNo, amount } = dto;
     
-        // Initiate Payment (Optional: You can choose to wait for confirmation)
-        const paymentResponse = await this.initiatePayment(amount);
-    
-        const units = this.calculateUnits(serviceType, amount);
-        const token = this.generateToken();
-    
-        const recharge = this.rechargeRepository.create({
-            serviceType,
-            meterNo,
-            amount,
-            units,
-            token, // no tx_ref here
+        // Check for any pending transaction
+        let pendingTransaction = await this.rechargeRepository.findOne({
+            where: { meterNo, serviceType, paymentStatus: 'pending' },
+            order: { createdAt: 'DESC' },
         });
     
+        // If a pending transaction exists, return its details
+        if (pendingTransaction) {
+            return {
+                message: 'Pending transaction already exists',
+                transactionId: pendingTransaction.id,
+                
+            };
+        }
+        const recharge = this.rechargeRepository.create({
+            serviceType: serviceType as 'escom' | 'waterboard', // Ensure correct type
+            meterNo,
+            amount,
+            units: 0, // Will be calculated later
+            token: null as any, // TypeORM workaround
+            paymentStatus: 'pending',
+            status: 'pending',
+        });
         const savedRecharge = await this.rechargeRepository.save(recharge);
+        // Initiate Payment
+        const paymentResponse = await this.initiatePayment(amount,savedRecharge.id.toString());
+    
+        // Create new recharge record
+        
+    
+   
     
         return {
             meterNo: savedRecharge.meterNo,
             amount: savedRecharge.amount,
-            units,
-            token: savedRecharge.token,
-            rechargeDate: savedRecharge.rechargeDate,
-            serviceType,
-            paymentUrl: paymentResponse.checkout_url, // Include payment URL in the response
+            transactionId: savedRecharge.id,
+            paymentUrl: paymentResponse.checkout_url,
         };
     }
     
-
-    // Fetches recharge history for a specific service type
-    async getRechargeHistory(serviceType: 'escom' | 'waterboard'): Promise<RechargeEntity[]> {
-        return this.rechargeRepository.find({
-            where: { serviceType },
-            order: { rechargeDate: 'DESC' },
+    // Step 2: Payment Callback - Process Recharge Only After Payment Success
+    async paymentCallback(transactionId: string, status: string) {
+        // Find the pending transaction
+        const transaction = await this.rechargeRepository.findOne({
+            where: { id: transactionId, status: 'pending' },
         });
+
+        if (!transaction || status !== 'success') {
+            throw new HttpException('Invalid or failed payment', HttpStatus.BAD_REQUEST);
+        }
+
+        // Process Recharge
+        const units = this.calculateUnits(transaction.serviceType, transaction.amount);
+        const token = this.generateToken();
+
+        // Update Transaction
+        transaction.units = units;
+        transaction.token = token;
+        transaction.status = 'completed'; // Mark as completed
+        transaction.rechargeDate = new Date();
+
+        await this.rechargeRepository.save(transaction);
+
+        // Return Recharge Details
+        return {
+            meterNo: transaction.meterNo,
+            amount: transaction.amount,
+            units,
+            token,
+            rechargeDate: transaction.rechargeDate,
+            serviceType: transaction.serviceType,
+        };
     }
 }
