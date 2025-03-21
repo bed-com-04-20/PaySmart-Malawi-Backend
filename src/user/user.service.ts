@@ -7,6 +7,7 @@ import { LoginDto } from './dto/login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -40,11 +41,20 @@ export class UserService {
       throw new Error('User registration failed'); // Handle errors gracefully
     }
   }
-  async updateUser(id:string, UpdateUserDto:any){
-    await this.userRepository.update(id, UpdateUserDto);
-    return await this.userRepository.findOne({where:{id}});
-
+  async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    // Ensure there is at least one field to update
+    const updateData = Object.fromEntries(
+      Object.entries(updateUserDto).filter(([_, v]) => v !== undefined && v !== null)
+    );
+  
+    if (Object.keys(updateData).length === 0) {
+      throw new Error('No valid fields provided for update');
+    }
+  
+    await this.userRepository.update(id, updateData);
+    return this.userRepository.findOne({ where: { id } });
   }
+  
   async getUserById(id: string) {
     return this.userRepository.findOne({ where: { id } });
   }
