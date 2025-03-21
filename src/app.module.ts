@@ -14,7 +14,8 @@ import { TVsubscription } from './Entities/TVsubscription.entity';
 import { HousePaymentsModule } from './house-payments/house-payments.module';
 import { HousePayment } from './house-payments/entities/house-payment.entity';
 import { InstallmentPayment } from './house-payments/entities/installmentPayment';
-import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+
 
 
 @Module({
@@ -56,7 +57,8 @@ import { AuthModule } from './auth/auth.module';
     
     CustomRechargesModule,
     HousePaymentsModule,
-    AuthModule,
+    UserModule,
+ 
    
   ],
 })

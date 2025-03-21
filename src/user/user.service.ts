@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import * as firebaseAdmin from 'firebase-admin';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import * as firebaseAdmin from 'firebase-admin';
 
 @Injectable()
-export class AuthService {
+export class UserService {
   async registerUser(registerUser: RegisterUserDto) {
     console.log(registerUser);
     try {
@@ -19,5 +21,5 @@ export class AuthService {
       throw new Error('User registration failed'); // Handle errors gracefully
     }
   }
-
+  
 }

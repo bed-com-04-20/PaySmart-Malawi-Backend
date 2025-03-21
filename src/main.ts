@@ -7,19 +7,20 @@ import * as fs from 'fs';
 async function bootstrap() {
 
   //firebase ;
-  const firebaseKeyFilePath =
-    './user-authentication-b6fde-firebase-adminsdk-1q08s-74c6d7bcbb.json';
-  const firebaseServiceAccount /*: ServiceAccount*/ = JSON.parse(
-    fs.readFileSync(firebaseKeyFilePath).toString(),
-  );
-  if (firebaseAdmin.apps.length === 0) {
-    console.log('Initialize Firebase Application.');
-    firebaseAdmin.initializeApp({
-      credential: firebaseAdmin.credential.cert(firebaseServiceAccount),
-    });
-  }
+ 
   const app = await NestFactory.create(AppModule);
   app.enableCors();
+  const firebaseKeyFilePath =
+  './paysmart-malawi-firebase-adminsdk-fbsvc-2fe77fc295.json';
+const firebaseServiceAccount /*: ServiceAccount*/ = JSON.parse(
+  fs.readFileSync(firebaseKeyFilePath).toString(),
+);
+if (firebaseAdmin.apps.length === 0) {
+  console.log('Initialize Firebase Application.');
+  firebaseAdmin.initializeApp({
+    credential: firebaseAdmin.credential.cert(firebaseServiceAccount),
+  });
+}
 
   // Load environment variables using ConfigService
   const configService = app.get(ConfigService);
