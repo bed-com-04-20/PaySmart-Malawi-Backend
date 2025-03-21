@@ -9,7 +9,14 @@ async function bootstrap() {
   //firebase ;
  
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors(
+    {
+      origin: '*',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      allowedHeaders: 'Content-Type, Accept, Authorization',
+      credentials: true,
+    }
+  );
   const firebaseKeyFilePath =
   './paysmart-malawi-firebase-adminsdk-fbsvc-2fe77fc295.json';
 const firebaseServiceAccount /*: ServiceAccount*/ = JSON.parse(
