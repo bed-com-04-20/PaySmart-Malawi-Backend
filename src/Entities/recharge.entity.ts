@@ -17,13 +17,13 @@ export class RechargeEntity {
     @Column('decimal', { precision: 10, scale: 2 })
     units: number;
 
-    @Column()
+    @Column({nullable:true})
     tx_ref: string;
 
-    @Column()
+    @Column({nullable:true})
     status: string;
 
-    @Column({ type: 'bigint' }) // Use `bigint` for 15-digit token numbers
+    @Column({ type: 'bigint', nullable:true }) // Use `bigint` for 15-digit token numbers
     token: number;
 
     @CreateDateColumn({ type: 'timestamp' })
