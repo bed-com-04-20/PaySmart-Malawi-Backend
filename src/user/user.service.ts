@@ -4,9 +4,17 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import * as firebaseAdmin from 'firebase-admin';
 import axios from 'axios';
 import { LoginDto } from './dto/login.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
+ constructor(
+  @InjectRepository(User)
+  private userRepository: Repository<User>,
+ ){}
+
   async registerUser(registerUser: RegisterUserDto) {
     console.log(registerUser);
     try {
@@ -16,7 +24,17 @@ export class UserService {
         password: registerUser.password,
       });
       console.log('User Record:', userRecord);
-      return userRecord;
+
+     const newUser =  this.userRepository.create({
+      firebaseUid: userRecord.uid, // Save Firebase UID
+      email: registerUser.email,
+      firstName: registerUser.firstName,
+      lastName: registerUser.lastName,
+      phoneNumber: registerUser.phoneNumber,
+     });
+
+     await this.userRepository.save(newUser); 
+     return newUser;// Save user to the database.
     } catch (error) {
       console.error('Error creating user:', error);
       throw new Error('User registration failed'); // Handle errors gracefully
