@@ -21,8 +21,8 @@ export class User {
   phoneNumber: string;
 
   @Column({ nullable: true })
-  meterNo?: string;
+  meterNo?: number;
 
   @Column({ nullable: true })
-  deltaNumber?: string;
+  deltaNumber?: number;
 }
