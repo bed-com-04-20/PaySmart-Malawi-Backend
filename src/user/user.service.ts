@@ -40,6 +40,14 @@ export class UserService {
       throw new Error('User registration failed'); // Handle errors gracefully
     }
   }
+  async updateUser(id:string, UpdateUserDto:any){
+    await this.userRepository.update(id, UpdateUserDto);
+    return await this.userRepository.findOne({where:{id}});
+
+  }
+  async getUserById(id: string) {
+    return this.userRepository.findOne({ where: { id } });
+  }
   async loginUser(payload: LoginDto) {
     const { email, password } = payload;
     try {
