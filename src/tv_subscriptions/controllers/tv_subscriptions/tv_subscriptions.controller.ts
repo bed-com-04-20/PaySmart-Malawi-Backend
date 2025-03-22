@@ -6,9 +6,9 @@ import { TvSubscriptionsService } from 'src/tv_subscriptions/services/tv_subscri
 export class TvSubscriptionsController {
     constructor(private readonly subscriptionService: TvSubscriptionsService) {}
 
-    @Get('packages/:serviceId')
-    listPackages(@Param('serviceId') serviceId: number) {
-      return this.subscriptionService.listPackages(serviceId);
+    @Get()
+    listPackages() {
+      return this.subscriptionService.listPackages();
     }
   
     @Post('subscribe')

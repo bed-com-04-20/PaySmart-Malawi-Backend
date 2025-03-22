@@ -2,10 +2,32 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-
+import * as firebaseAdmin from 'firebase-admin';
+import * as fs from 'fs';
 async function bootstrap() {
+
+  //firebase ;
+ 
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors(
+    {
+      origin: '*',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      allowedHeaders: 'Content-Type, Accept, Authorization',
+      credentials: true,
+    }
+  );
+  const firebaseKeyFilePath =
+  './paysmart-malawi-firebase-adminsdk-fbsvc-2fe77fc295.json';
+const firebaseServiceAccount /*: ServiceAccount*/ = JSON.parse(
+  fs.readFileSync(firebaseKeyFilePath).toString(),
+);
+if (firebaseAdmin.apps.length === 0) {
+  console.log('Initialize Firebase Application.');
+  firebaseAdmin.initializeApp({
+    credential: firebaseAdmin.credential.cert(firebaseServiceAccount),
+  });
+}
 
   // Load environment variables using ConfigService
   const configService = app.get(ConfigService);

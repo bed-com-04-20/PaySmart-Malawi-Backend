@@ -16,8 +16,8 @@ export class TvSubscriptionsService {
         @InjectRepository(TvPackageEntity)
         private readonly tvPackageRepository: Repository<TvPackageEntity>
     ){}
-    async listPackages(serviceId:number){
-        return this.tvPackageRepository.find({ where:{id:serviceId}});
+    async listPackages() :Promise<TvPackageEntity[]> {
+        return this.tvPackageRepository.find();
     }
 
     async processSubscription(dto:CreateSubscriptionDTO)
@@ -36,7 +36,7 @@ export class TvSubscriptionsService {
 
        const paymentResponse = await this.initiatePayment(packageData.price, transactionRef) as { success: boolean };
        if(!paymentResponse.success){
-           throw new HttpException('payment succes', HttpStatus.BAD_REQUEST);
+           return {message: 'invalid payment'}
 
            
 

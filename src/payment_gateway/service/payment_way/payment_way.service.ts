@@ -53,7 +53,6 @@ export class PaymentWayService {
             meterNo,
             serviceType,
             amount,
-            tx_ref,
             status: 'pending',
         });
        
@@ -64,7 +63,6 @@ export class PaymentWayService {
             currency,
             email,
             name,
-            tx_ref,
             phone_number: phoneNumber,
             callback_url: 'https://6e31-41-70-44-187.ngrok-free.app/custom-recharges/escom/recharge',
             return_url: 'https://your-frontend.com/payment-success'
