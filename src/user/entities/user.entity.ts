@@ -25,7 +25,9 @@ export class User {
 
   @Column({ nullable: true })
   WaterBoardNo?: number;
-  
+
+  @Column({ nullable: true })
+  decoderNo?: number;
 
   @Column({ nullable: true })
   deltaNumber?: number;

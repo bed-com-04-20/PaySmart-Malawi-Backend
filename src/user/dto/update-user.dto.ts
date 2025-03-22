@@ -10,10 +10,21 @@ export class UpdateUserDto {
   @ApiProperty({ description: 'Waterboard meter number', required: false })
   @IsOptional()
   @IsString()
-  meterNo?: string;
+  meterNo?: number;
 
   @ApiProperty({ description: 'House payment Delta Number', required: false })
   @IsOptional()
   @IsString()
-  deltaNumber?: string;
+  deltaNumber?: number;
+
+  @ApiProperty({ description: 'House payment Delta Number', required: false })
+  @IsOptional()
+  @IsString()
+  WaterBoardNo?: number;
+  
+  @ApiProperty({ description: 'House payment Delta Number', required: false })
+  @IsOptional()
+  @IsString()
+  decoderNo?: number;
+  
 }
