@@ -8,6 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+  import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class UserService {
@@ -41,19 +43,34 @@ export class UserService {
       throw new Error('User registration failed'); // Handle errors gracefully
     }
   }
+  
+  
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
-    // Ensure there is at least one field to update
+    const trimmedId = id.trim(); // Trim spaces
+    
+    // Validate UUID format
+    if (!isUUID(trimmedId)) {
+      throw new BadRequestException('Invalid UUID format');
+    }
+  
+    // Filter out undefined and null values
     const updateData = Object.fromEntries(
       Object.entries(updateUserDto).filter(([_, v]) => v !== undefined && v !== null)
     );
   
     if (Object.keys(updateData).length === 0) {
-      throw new Error('No valid fields provided for update');
+      throw new BadRequestException('No valid fields provided for update');
     }
   
-    await this.userRepository.update(id, updateData);
-    return this.userRepository.findOne({ where: { id } });
+    // Perform update and check if user exists
+    const updateResult = await this.userRepository.update(trimmedId, updateData);
+    if (updateResult.affected === 0) {
+      throw new NotFoundException(`User with ID ${trimmedId} not found`);
+    }
+  
+    return this.userRepository.findOne({ where: { id: trimmedId } });
   }
+  
   
   async getUserById(id: string) {
     return this.userRepository.findOne({ where: { id } });

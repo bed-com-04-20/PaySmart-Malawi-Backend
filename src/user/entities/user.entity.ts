@@ -24,5 +24,9 @@ export class User {
   meterNo?: number;
 
   @Column({ nullable: true })
+  WaterBoardNo?: number;
+  
+
+  @Column({ nullable: true })
   deltaNumber?: number;
 }
