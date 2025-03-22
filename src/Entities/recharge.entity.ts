@@ -16,8 +16,7 @@ export class RechargeEntity {
     amount: number;
 
     @Column('decimal', { precision: 10, scale: 2, default: 0 })
-    units: number; // Set default 0 to prevent errors before payment
-
+    units: number; // Se
     @Column({ type: 'enum', enum: ['pending', 'completed'], default: 'pending' }) 
     status: string; // Tracks recharge processing state
 
@@ -25,11 +24,7 @@ export class RechargeEntity {
     paymentStatus: string; // Tracks payment status
 
     @Column({ type: 'bigint', nullable: true })
-    token: number; // Will be generated only after successful payment
-
-    @CreateDateColumn({ type: 'timestamp' })
-    rechargeDate: Date;
-
+    token: number; // Will be generated only after successful p
     @CreateDateColumn()
     createdAt: Date;
 
