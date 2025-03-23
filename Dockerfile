@@ -1,21 +1,36 @@
-# 1) Base image
+# --------------------------
+# 1) Builder stage
+# --------------------------
+FROM node:18-alpine as builder
+
+# Create app directory
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source code and build
+COPY . .
+RUN npm run build
+
+# --------------------------
+# 2) Final stage
+# --------------------------
 FROM node:18-alpine
 
-# 2) Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# 3) Copy package files & install
+# Copy only compiled output from builder
+COPY --from=builder /app/dist ./dist
+
+# Copy package files to install only production dependencies
 COPY package*.json ./
 RUN npm install --only=production
 
-# 4) Copy the rest of your code
-COPY . .
-
-# 5) Build your NestJS app (this assumes you have "build" script in package.json)
-RUN npm run build
-
-# 6) Expose the port
+# Expose the port (Render will set process.env.PORT)
 EXPOSE 3000
 
-# 7) Command to run the app (looking for main.js in /dist folder)
-CMD [ "node", "dist/main.js" ]
+# Run the app
+CMD ["node", "dist/main.js"]
+
