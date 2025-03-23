@@ -33,6 +33,7 @@ import { User } from './user/entities/user.entity';
       database: process.env.DB_NAME,
       synchronize: false, 
       autoLoadEntities: true,
+      migrations: ['dist/migrations/*.js'], 
       entities: [
         TVServiceEntity, 
         TvPackageEntity, 
