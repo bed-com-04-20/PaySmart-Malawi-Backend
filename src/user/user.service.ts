@@ -4,9 +4,20 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import * as firebaseAdmin from 'firebase-admin';
 import axios from 'axios';
 import { LoginDto } from './dto/login.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+  import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class UserService {
+ constructor(
+  @InjectRepository(User)
+  private userRepository: Repository<User>,
+ ){}
+
   async registerUser(registerUser: RegisterUserDto) {
     console.log(registerUser);
     try {
@@ -16,11 +27,53 @@ export class UserService {
         password: registerUser.password,
       });
       console.log('User Record:', userRecord);
-      return userRecord;
+
+     const newUser =  this.userRepository.create({
+      firebaseUid: userRecord.uid, // Save Firebase UID
+      email: registerUser.email,
+      firstName: registerUser.firstName,
+      lastName: registerUser.lastName,
+      phoneNumber: registerUser.phoneNumber,
+     });
+
+     await this.userRepository.save(newUser); 
+     return newUser;// Save user to the database.
     } catch (error) {
       console.error('Error creating user:', error);
       throw new Error('User registration failed'); // Handle errors gracefully
     }
+  }
+  
+  
+  async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    const trimmedId = id.trim(); // Trim spaces
+    
+    // Validate UUID format
+    if (!isUUID(trimmedId)) {
+      throw new BadRequestException('Invalid UUID format');
+    }
+  
+    // Filter out undefined and null values
+    const updateData = Object.fromEntries(
+      Object.entries(updateUserDto).filter(([_, v]) => v !== undefined && v !== null)
+    );
+  
+    if (Object.keys(updateData).length === 0) {
+      throw new BadRequestException('No valid fields provided for update');
+    }
+  
+    // Perform update and check if user exists
+    const updateResult = await this.userRepository.update(trimmedId, updateData);
+    if (updateResult.affected === 0) {
+      throw new NotFoundException(`User with ID ${trimmedId} not found`);
+    }
+  
+    return this.userRepository.findOne({ where: { id: trimmedId } });
+  }
+  
+  
+  async getUserById(id: string) {
+    return this.userRepository.findOne({ where: { id } });
   }
   async loginUser(payload: LoginDto) {
     const { email, password } = payload;

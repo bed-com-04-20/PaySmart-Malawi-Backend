@@ -15,6 +15,7 @@ import { HousePaymentsModule } from './house-payments/house-payments.module';
 import { HousePayment } from './house-payments/entities/house-payment.entity';
 import { InstallmentPayment } from './house-payments/entities/installmentPayment';
 import { UserModule } from './user/user.module';
+import { User } from './user/entities/user.entity';
 
 
 
@@ -30,7 +31,7 @@ import { UserModule } from './user/user.module';
       username: 'postgres',
       password: 'tech-nest265',
       database: 'paysmart_malawi',
-      entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription ],
+      entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription, User ],
       synchronize: true, // Set to false in production
     }),
 

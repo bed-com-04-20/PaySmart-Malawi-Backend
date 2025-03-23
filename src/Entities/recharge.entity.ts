@@ -28,6 +28,9 @@ export class RechargeEntity {
     @CreateDateColumn()
     createdAt: Date;
 
+    @Column({ nullable: true })
+    rechargeDate: Date;
+
     @BeforeInsert()
     generateId() {
         this.id = uuidv4(); // Automatically assigns a UUID before inserting
