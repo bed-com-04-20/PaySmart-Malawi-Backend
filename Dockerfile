@@ -33,5 +33,6 @@ RUN npm install --only=production
 # Expose the port (Render sets process.env.PORT, but we note 3000)
 EXPOSE 3000
 
-# Start the app (point to wherever Nest puts main.js)
-CMD ["node", "dist/src/main.js"]
+# Start the container by first running migrations, then starting the app
+# We assume you have "typeorm" in your production deps. If you have a script "migration:run" in package.json, you can do: "npm run migration:run"
+CMD ["/bin/sh", "-c", "npx typeorm migration:run && node dist/src/main.js"]
