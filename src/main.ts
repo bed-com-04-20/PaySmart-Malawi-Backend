@@ -4,12 +4,20 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import * as firebaseAdmin from 'firebase-admin';
 import * as fs from 'fs';
+import { AppDataSource } from './data-source'; // <-- import your data source here
 
 async function bootstrap() {
-  // Create the NestJS application
+  // 1) Initialize the data source so we can run migrations
+  console.log('Initializing TypeORM data source...');
+  await AppDataSource.initialize();
+  console.log('Running migrations...');
+  await AppDataSource.runMigrations();
+  console.log('Migrations complete.');
+
+  // 2) Create the NestJS application
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for all origins (you can customize this if you prefer)
+  // 3) Enable CORS if needed
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -17,15 +25,12 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Optionally retrieve config variables if needed
-  // (e.g., for your DB connection, API keys, etc.)
+  // 4) Optionally retrieve config variables
   const configService = app.get(ConfigService);
 
-  // Initialize Firebase if needed
+  // 5) Initialize Firebase if needed
   const firebaseKeyFilePath = './paysmart-malawi-firebase-adminsdk-fbsvc-2fe77fc295.json';
-  const firebaseServiceAccount = JSON.parse(
-    fs.readFileSync(firebaseKeyFilePath).toString(),
-  );
+  const firebaseServiceAccount = JSON.parse(fs.readFileSync(firebaseKeyFilePath, 'utf-8'));
   if (firebaseAdmin.apps.length === 0) {
     console.log('Initializing Firebase Application...');
     firebaseAdmin.initializeApp({
@@ -33,10 +38,7 @@ async function bootstrap() {
     });
   }
 
-  // Use process.env.PORT, fallback to 3000 if not set
-  const port = process.env.PORT || 3000;
-
-  // Configure Swagger (API documentation)
+  // 6) Swagger setup (API docs)
   const swaggerConfig = new DocumentBuilder()
     .setTitle('PaySmart Malawi Backend API')
     .setDescription('API for managing PaySmart Malawi transactions')
@@ -46,7 +48,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
-  // Start listening
+  // 7) Start listening on Render's port or 3000
+  const port = process.env.PORT || 3000;
   await app.listen(port);
 
   console.log(`Application is running on: ${await app.getUrl()}`);
