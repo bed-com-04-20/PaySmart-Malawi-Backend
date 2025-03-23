@@ -1,22 +1,18 @@
-# --------------------------
+# -----------------------
 # 1) Builder stage
-# --------------------------
+# -----------------------
 FROM node:18-alpine as builder
 
-# Create app directory
 WORKDIR /app
-
-# Install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy source code and build
 COPY . .
 RUN npm run build
 
-# --------------------------
+# -----------------------
 # 2) Final stage
-# --------------------------
+# -----------------------
 FROM node:18-alpine
 
 WORKDIR /app
@@ -24,13 +20,12 @@ WORKDIR /app
 # Copy only compiled output from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy package files to install only production dependencies
+# Copy package files again, but only install production deps
 COPY package*.json ./
 RUN npm install --only=production
 
-# Expose the port (Render will set process.env.PORT)
+# Expose the port (Render will set PORT, but we note 3000 here for convenience)
 EXPOSE 3000
 
-# Run the app
+# Start the app
 CMD ["node", "dist/main.js"]
-
