@@ -13,7 +13,7 @@ RUN npm run build
 # -----------------------
 # 2) Final stage
 # -----------------------
-FROM node:18-alpine
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
