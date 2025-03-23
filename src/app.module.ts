@@ -31,8 +31,16 @@ import { User } from './user/entities/user.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      synchronize: false, // or true in dev
+      synchronize: false, 
       autoLoadEntities: true,
+      entities: [
+        TVServiceEntity, 
+        TvPackageEntity, 
+        TVsubscription, 
+        RechargeEntity, 
+        HousePayment, 
+        InstallmentPayment, 
+        User],
     }),
     
 
