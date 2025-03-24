@@ -18,7 +18,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "ts-node -r tsconfig-paths/register src/seeds/house.seeder.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/seeds/house.seeder.ts",
+
+    "migration:run": "npm run build && node dist/data-source.js migration:run",
+    "migration:revert": "npm run build && node dist/data-source.js migration:revert",
+    "migration:generate": "npm run build && node dist/data-source.js migration:generate -n"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",

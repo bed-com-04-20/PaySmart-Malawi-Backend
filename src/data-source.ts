@@ -1,6 +1,8 @@
-// src/data-source.ts
-
 import { DataSource } from 'typeorm';
+import { config } from 'dotenv';
+config(); // Load .env variables
+
+// Entities
 import { TVServiceEntity } from './Entities/TVservice.entity';
 import { TvPackageEntity } from './Entities/TVpackages.entity';
 import { TVsubscription } from './Entities/TVsubscription.entity';
@@ -11,12 +13,13 @@ import { User } from './user/entities/user.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST, 
+  host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT ?? '5432', 10),
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  synchronize: false, 
+  synchronize: false,
+  logging: true,
   entities: [
     TVServiceEntity,
     TvPackageEntity,
@@ -26,5 +29,5 @@ export const AppDataSource = new DataSource({
     InstallmentPayment,
     User,
   ],
-  migrations: ['dist/migrations/*.js'], 
+  migrations: ['dist/migrations/*.js'],
 });
