@@ -4,16 +4,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import * as firebaseAdmin from 'firebase-admin';
 import * as fs from 'fs';
-import { AppDataSource } from './data-source'; // <-- import your data source here
+
 
 async function bootstrap() {
   // 1) Initialize the data source so we can run migrations
-  console.log('Initializing TypeORM data source...');
-  await AppDataSource.initialize();
-  console.log('Running migrations...');
-  await AppDataSource.runMigrations();
-  console.log('Migrations complete.');
-
+  
   // 2) Create the NestJS application
   const app = await NestFactory.create(AppModule);
 
