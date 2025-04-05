@@ -13,7 +13,7 @@ export class rechargeDTO{
     // @ApiProperty()
     // accountIdentifier?: string
     
-    @ApiProperty()
+    @ApiProperty({maxLength:10})
     meterNo: number
 
     @ApiProperty()

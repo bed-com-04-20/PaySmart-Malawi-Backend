@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, JoinTable } from "typeorm";
 import { TvPackageEntity } from "./TVpackages.entity";
 
 @Entity()
@@ -6,21 +6,19 @@ export class TVsubscription {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToMany(()=> TvPackageEntity)
+    @ManyToMany(() => TvPackageEntity)
+    @JoinTable() // This decorator marks this side as the owning side.
     packages: TvPackageEntity[];
 
     @Column()
     accountNumber: number;
-    ;
 
     @Column()
     tx_ref: string;
 
     @Column()
-    status:string
+    status: string;
 
     @CreateDateColumn()
     created_at: Date;
-
-
 }
