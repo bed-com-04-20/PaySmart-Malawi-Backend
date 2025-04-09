@@ -35,6 +35,17 @@ import { TVsubscription } from './Entities/TVsubscription.entity';
         },
       },
     }),
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: 'localhost',
+    //   port: 5432,
+    //   username: 'postgres',
+    //   password: 'tech-nest265',
+    //   database: 'paysmrt_backend',
+    //   entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription ], // Add all your entities
+    //   synchronize: true, // Set to false in production
+    // }),
+
     
     PaymentGatewayModule,
     TvSubscriptionsModule,
