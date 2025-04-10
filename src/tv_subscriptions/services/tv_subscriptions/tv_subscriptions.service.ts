@@ -16,25 +16,36 @@ export class TvSubscriptionsService {
         private readonly tvPackageRepository: Repository<TvPackageEntity>
     ) {}
 
+    // List all available packages
     async listPackages(): Promise<TvPackageEntity[]> {
         return this.tvPackageRepository.find();
     }
 
+    // Process the subscription
     async processSubscription(dto: CreateSubscriptionDTO) {
         const { packageId, accountNumber } = dto;
 
+        // Ensure the account number is valid
+        if (!accountNumber || isNaN(Number(accountNumber))) {
+            throw new HttpException('Invalid account number', HttpStatus.BAD_REQUEST);
+        }
+
+        // Get the package data from the repository
         const packageData = await this.tvPackageRepository.findOne({ where: { id: packageId } });
         if (!packageData) {
             throw new HttpException('Package not found', HttpStatus.NOT_FOUND);
         }
 
+        // Create a unique transaction reference
         const transactionRef = `TX-${Date.now()}`;
 
+        // Initiate the payment request
         const paymentResponse = await this.initiatePayment(packageData.price, transactionRef);
         if (!paymentResponse.success) {
-            return { message: 'Invalid payment' };
+            throw new HttpException(paymentResponse.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        // Create and save the subscription
         const subscription = this.tvSubscriptionRepository.create({
             accountNumber,
             packages: [packageData],
@@ -43,6 +54,7 @@ export class TvSubscriptionsService {
         });
         await this.tvSubscriptionRepository.save(subscription);
 
+        // Return a successful response with the checkout URL
         return {
             message: 'Subscription successful',
             transactionRef,
@@ -53,9 +65,10 @@ export class TvSubscriptionsService {
         };
     }
 
+    // Initiate payment using external API (PayChangu)
     async initiatePayment(amount: number, transactionRef: string): Promise<any> {
         try {
-            // Construct payment data
+            // Define the payment data structure
             const paymentData = {
                 tx_ref: transactionRef,
                 amount,
@@ -63,7 +76,7 @@ export class TvSubscriptionsService {
                 callback_url: 'https://your-website.com/payment-callback', // Add your callback URL here
             };
 
-            // Define the expected response structure
+            // Define the expected response type for payment
             interface PaymentResponse {
                 message: string;
                 status: string;
@@ -92,7 +105,7 @@ export class TvSubscriptionsService {
                 },
             );
 
-            // Check the nested data for the checkout URL
+            // Check if the response contains a valid checkout URL
             if (response.data && response.data.data && response.data.data.checkout_url) {
                 return { success: true, checkout_url: response.data.data.checkout_url };
             } else {

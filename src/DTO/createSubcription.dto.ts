@@ -5,6 +5,6 @@ export class CreateSubscriptionDTO{
     packageId: number
 
     @ApiProperty({})
-    accountNumber: number;
+    accountNumber: string;
     
 }
