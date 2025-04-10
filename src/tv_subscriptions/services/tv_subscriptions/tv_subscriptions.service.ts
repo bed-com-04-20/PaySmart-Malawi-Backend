@@ -35,6 +35,7 @@ export class TvSubscriptionsService {
             return { message: 'Invalid payment' };
         }
 
+        // Create and save the subscription
         const subscription = this.tvSubscriptionRepository.create({
             accountNumber,
             packages: [packageData],
@@ -43,14 +44,59 @@ export class TvSubscriptionsService {
         });
         await this.tvSubscriptionRepository.save(subscription);
 
+        // Generate the transaction summary for this subscription
+        const summary = this.generateTransactionSummary(subscription, packageData);
+
         return {
             message: 'Subscription successful',
-            transactionRef,
-            package: packageData.name,
-            accountNumber,
-            price: packageData.price,
+            summary,
             checkout_url: paymentResponse.checkout_url, // Optional: return checkout URL if needed
         };
+    }
+
+    /**
+     * Generates a transaction summary including the time, date,
+     * TV package name, account number, and transaction reference.
+     *
+     * @param subscription The saved subscription entity
+     * @param packageData The TV package entity selected by the user
+     * @returns An object containing the transaction summary details
+     */
+    generateTransactionSummary(subscription: TVsubscription, packageData: TvPackageEntity) {
+        const now = new Date();
+        return {
+            transactionDate: now.toLocaleDateString(),  // e.g. "MM/DD/YYYY" or region-specific format
+            transactionTime: now.toLocaleTimeString(),    // e.g. "HH:MM:SS AM/PM"
+            tvPackage: packageData.name,
+            accountNumber: subscription.accountNumber,
+            amount: packageData.price,
+            tx_ref: subscription.tx_ref,
+        };
+    }
+
+    /**
+     * Retrieves transaction summaries for all subscriptions.
+     *
+     * @returns An array of transaction summary objects.
+     */
+    async getAllTransactionSummaries() {
+        // Fetch all subscriptions along with their related packages
+        const subscriptions = await this.tvSubscriptionRepository.find({
+            relations: ['packages'],
+        });
+
+        if (!subscriptions || subscriptions.length === 0) {
+            throw new HttpException('No transactions found', HttpStatus.NOT_FOUND);
+        }
+
+        // Map each subscription to its transaction summary.
+        const summaries = subscriptions.map(subscription => {
+            // Assuming each subscription has at least one package.
+            const packageData = subscription.packages[0];
+            return this.generateTransactionSummary(subscription, packageData);
+        });
+
+        return summaries;
     }
 
     async initiatePayment(amount: number, transactionRef: string): Promise<any> {

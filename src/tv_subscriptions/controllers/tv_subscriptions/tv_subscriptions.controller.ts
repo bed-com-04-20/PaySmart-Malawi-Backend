@@ -8,11 +8,22 @@ export class TvSubscriptionsController {
 
     @Get()
     listPackages() {
-      return this.subscriptionService.listPackages();
+        return this.subscriptionService.listPackages();
     }
   
     @Post('subscribe')
     subscribe(@Body() dto: CreateSubscriptionDTO) {
-      return this.subscriptionService.processSubscription(dto);
+        return this.subscriptionService.processSubscription(dto);
+    }
+
+    /**
+     * Retrieves transaction summaries for all subscriptions.
+     * Example request: GET /tv-subscriptions/summary
+     *
+     * @returns An array of summary objects with transaction details.
+     */
+    @Get('summary')
+    getAllTransactionSummaries() {
+        return this.subscriptionService.getAllTransactionSummaries();
     }
 }
