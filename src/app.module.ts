@@ -19,32 +19,32 @@ import { TVsubscription } from './Entities/TVsubscription.entity';
       isGlobal: true,
     }),
     
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: 'dpg-cv6t0g56l47c73dbilr0-a.oregon-postgres.render.com',
+    //   port: 5432,
+    //   username: 'paysmart_backend_user',
+    //   password: 'bLg5kfZXFLcuywytNftc566Q7yV0SsY5',
+    //   database: 'paysmart_backend',
+    //   entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription ], // Add all your entities
+    //   synchronize: true, // Set to false in production
+    //   ssl: true, // Required for Render-hosted PostgreSQL
+    //   extra: {
+    //     ssl: {
+    //       rejectUnauthorized: false, // Avoids SSL issues
+    //     },
+    //   },
+    // }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'dpg-cv6t0g56l47c73dbilr0-a.oregon-postgres.render.com',
+      host: 'localhost',
       port: 5432,
-      username: 'paysmart_backend_user',
-      password: 'bLg5kfZXFLcuywytNftc566Q7yV0SsY5',
+      username: 'postgres',
+      password: 'gambiza',
       database: 'paysmart_backend',
       entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription ], // Add all your entities
       synchronize: true, // Set to false in production
-      ssl: true, // Required for Render-hosted PostgreSQL
-      extra: {
-        ssl: {
-          rejectUnauthorized: false, // Avoids SSL issues
-        },
-      },
     }),
-    // TypeOrmModule.forRoot({
-    //   type: 'postgres',
-    //   host: 'localhost',
-    //   port: 5432,
-    //   username: 'postgres',
-    //   password: 'tech-nest265',
-    //   database: 'paysmrt_backend',
-    //   entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription ], // Add all your entities
-    //   synchronize: true, // Set to false in production
-    // }),
 
     
     PaymentGatewayModule,
