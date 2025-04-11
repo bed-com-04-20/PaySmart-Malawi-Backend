@@ -11,7 +11,7 @@ export class CustomRechargesController {
     ) {}
 
     @Post('escom/recharge')
-    @ApiOperation({ summary: 'Process an ESCOM recharge' })
+    @ApiOperation({ summary: 'Process an ESCOM recharge and return a transaction summary with access token' })
     @ApiBody({ type: rechargeDTO })
     async processEscomRecharge(@Body() dto: rechargeDTO) {
         return this.customRechargesService.processRecharge(dto, 'escom');
@@ -30,13 +30,13 @@ export class CustomRechargesController {
     }
 
     @Get('escom/history')
-    @ApiOperation({ summary: 'Get ESCOM recharge history' })
+    @ApiOperation({ summary: 'Get full ESCOM recharge history' })
     async getEscomRechargeHistory() {
         return this.customRechargesService.getRechargeHistory('escom');
     }
 
     @Post('waterboard/recharge')
-    @ApiOperation({ summary: 'Process a Waterboard recharge' })
+    @ApiOperation({ summary: 'Process a Waterboard recharge and return a transaction summary with access token' })
     @ApiBody({ type: rechargeDTO })
     async processWaterboardRecharge(@Body() dto: rechargeDTO) {
         return this.customRechargesService.processRecharge(dto, 'waterboard');
@@ -55,8 +55,23 @@ export class CustomRechargesController {
     }
 
     @Get('waterboard/history')
-    @ApiOperation({ summary: 'Get Waterboard recharge history' })
+    @ApiOperation({ summary: 'Get full Waterboard recharge history' })
     async getWaterboardRechargeHistory() {
         return this.customRechargesService.getRechargeHistory('waterboard');
+    }
+
+    /**
+     * Retrieves recharge transaction summaries.
+     * If a "serviceType" query parameter is provided (escom or waterboard), only summaries for that service will be returned.
+     * Otherwise, summaries for all completed transactions are returned.
+     */
+    @Get('summary')
+    @ApiOperation({ summary: 'Get recharge transaction summaries. Optional query parameter: serviceType (escom or waterboard)' })
+    @ApiQuery({ name: 'serviceType', type: String, required: false, description: 'Filter summaries by service type (escom|waterboard)' })
+    async getTransactionSummaries(@Query('serviceType') serviceType?: 'escom' | 'waterboard') {
+        if (serviceType) {
+            return this.customRechargesService.getRechargeHistorySummary(serviceType);
+        }
+        return this.customRechargesService.getAllRechargeSummaries();
     }
 }

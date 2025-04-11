@@ -38,7 +38,8 @@ export class CustomRechargesService {
             const paymentData = {
                 amount,
                 currency: 'MWK',
-                callback_url: `https://your-server.com/api/recharges/payment-callback/${transactionId}`, // Callback for this transaction
+                // Note: Callback is not used in this flow but is still provided to the API.
+                callback_url: `https://callback-url.netlify.app/`,
             };
 
             const response = await axios.post<PaymentResponse>(
@@ -67,7 +68,7 @@ export class CustomRechargesService {
         }
     }
 
-    // Step 1: Initiate Recharge - Returns Payment URL Only
+    // Process Recharge: Initiates and completes the recharge process in one go (no callback)
     async processRecharge(dto: rechargeDTO, serviceType: 'escom' | 'waterboard') {
         const { meterNo, amount } = dto;
     
@@ -82,72 +83,84 @@ export class CustomRechargesService {
             return {
                 message: 'Pending transaction already exists',
                 transactionId: pendingTransaction.id,
-                
             };
         }
-        const recharge = this.rechargeRepository.create({
-            serviceType: serviceType as 'escom' | 'waterboard', // Ensure correct type
+    
+        // Create a new recharge record in a pending state.
+        let recharge = this.rechargeRepository.create({
+            serviceType,
             meterNo,
             amount,
-            units: 0, // Will be calculated later
-            token: null as any, // TypeORM workaround
+            units: 0,          // Will be calculated below.
+            token: null as any, // Will be generated below.
             paymentStatus: 'pending',
             status: 'pending',
         });
-        const savedRecharge = await this.rechargeRepository.save(recharge);
-        // Initiate Payment
-        const paymentResponse = await this.initiatePayment(amount,savedRecharge.id.toString());
+        recharge = await this.rechargeRepository.save(recharge);
     
-        // Create new recharge record
-        
-    
-   
-    
-        return {
-            meterNo: savedRecharge.meterNo,
-            amount: savedRecharge.amount,
-            transactionId: savedRecharge.id,
-            paymentUrl: paymentResponse.checkout_url,
-        };
-    }
-    
-    // Step 2: Payment Callback - Process Recharge Only After Payment Success
-    async paymentCallback(transactionId: string, status: string) {
-        // Find the pending transaction
-        const transaction = await this.rechargeRepository.findOne({
-            where: { id: transactionId, status: 'pending' },
-        });
-
-        if (!transaction || status !== 'success') {
-            throw new HttpException('Invalid or failed payment', HttpStatus.BAD_REQUEST);
+        // Initiate Payment.
+        const paymentResponse = await this.initiatePayment(amount, recharge.id.toString());
+        if (!paymentResponse.success) {
+            throw new HttpException(
+                'Payment initiation failed: ' + paymentResponse.message, 
+                HttpStatus.BAD_REQUEST
+            );
         }
-
-        // Process Recharge
-        const units = this.calculateUnits(transaction.serviceType, transaction.amount);
+    
+        // Process the recharge immediately without a callback.
+        const units = this.calculateUnits(serviceType, amount);
         const token = this.generateToken();
-
-        // Update Transaction
-        transaction.units = units;
-        transaction.token = token;
-        transaction.status = 'completed'; // Mark as completed
-        transaction.rechargeDate = new Date();
-
-        await this.rechargeRepository.save(transaction);
-
-        // Return Recharge Details
+        recharge.units = units;
+        recharge.token = token;
+        recharge.status = 'completed';
+        // Update the paymentStatus with an allowed enum value (e.g., "success").
+      
+        recharge.rechargeDate = new Date();
+        await this.rechargeRepository.save(recharge);
+    
+        // Generate and return the transaction summary using the dedicated method.
+        return this.generateTransactionSummary(recharge, paymentResponse.checkout_url);
+    }
+    
+    // Generate a transaction summary using a separate method.
+    generateTransactionSummary(recharge: RechargeEntity, paymentUrl?: string) {
+        const date = recharge.rechargeDate ? new Date(recharge.rechargeDate) : new Date();
         return {
-            meterNo: transaction.meterNo,
-            amount: transaction.amount,
-            units,
-            token,
-            rechargeDate: transaction.rechargeDate,
-            serviceType: transaction.serviceType,
+            transactionDate: date.toLocaleDateString(), // e.g., "MM/DD/YYYY"
+            transactionTime: date.toLocaleTimeString(),   // e.g., "HH:MM:SS AM/PM"
+            meterNo: recharge.meterNo,
+            serviceType: recharge.serviceType,
+            amount: recharge.amount,
+            units: recharge.units,
+            transactionId: recharge.id,
+            accessToken: recharge.token,                  // Included as the access token.
+            paymentUrl: paymentUrl,
         };
     }
+    
+    // Retrieve full recharge history for a service type.
     async getRechargeHistory(serviceType: 'escom' | 'waterboard'): Promise<RechargeEntity[]> {
         return this.rechargeRepository.find({
             where: { serviceType },
             order: { rechargeDate: 'DESC' },
         });
+    }
+    
+    // Retrieve recharge transaction summaries filtered by service type.
+    async getRechargeHistorySummary(serviceType: 'escom' | 'waterboard'): Promise<any[]> {
+        const transactions = await this.rechargeRepository.find({
+            where: { serviceType, status: 'completed' },
+            order: { rechargeDate: 'DESC' },
+        });
+        return transactions.map(transaction => this.generateTransactionSummary(transaction));
+    }
+  
+    // Retrieve all recharge transaction summaries.
+    async getAllRechargeSummaries(): Promise<any[]> {
+        const transactions = await this.rechargeRepository.find({
+            where: { status: 'completed' },
+            order: { rechargeDate: 'DESC' },
+        });
+        return transactions.map(transaction => this.generateTransactionSummary(transaction));
     }
 }
