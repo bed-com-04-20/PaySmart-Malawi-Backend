@@ -10,8 +10,8 @@ export class TVsubscription {
     @JoinTable() // This decorator marks this side as the owning side.
     packages: TvPackageEntity[];
 
-    @Column()
-    accountNumber: number;
+    @Column({nullable:true})
+    accountNumber: string;
 
     @Column()
     tx_ref: string;
