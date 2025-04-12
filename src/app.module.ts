@@ -12,6 +12,9 @@ import { InstallmentPayment } from './house-payments/entities/installmentPayment
 import { TVServiceEntity } from './Entities/TVservice.entity';
 import { TvPackageEntity } from './Entities/TVpackages.entity';
 import { TVsubscription } from './Entities/TVsubscription.entity';
+import { FeesPaymentsModule } from './fees-payments/fees-payments.module';
+import { StudentEntity } from './Entities/Student';
+import { UniversityEntity } from './Entities/university';
 
 @Module({
   imports: [
@@ -42,7 +45,7 @@ import { TVsubscription } from './Entities/TVsubscription.entity';
       username: 'postgres',
       password: 'tech-nest265',
       database: 'paysmrt_backend',
-      entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription ], // Add all your entities
+      entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription,StudentEntity, UniversityEntity ], // Add all your entities
       synchronize: true, // Set to false in production
     }),
 
@@ -53,6 +56,7 @@ import { TVsubscription } from './Entities/TVsubscription.entity';
     CustomRechargesModule,
     HousePaymentsModule,
     UserModule,
+    FeesPaymentsModule,
  
    
   ],
