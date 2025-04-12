@@ -9,6 +9,9 @@ export class UniversityEntity {
     @Column({unique: true})
     name: string;
 
+    @Column()
+    fees:string
+
     @Column({nullable:true})
     registrationNumber: string;
 
