@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
-import { InstallmentPayment } from "./InstallmentPayment";
+import { InstallmentPayment } from "./Paid.entity";
+
 
 @Entity()
 export class FeesPayment {
@@ -26,6 +27,9 @@ export class FeesPayment {
   // Student registration number
   @Column()
   regNo: string;
+
+  @Column()
+  name: string;
 
   // Student full name
   @Column()
