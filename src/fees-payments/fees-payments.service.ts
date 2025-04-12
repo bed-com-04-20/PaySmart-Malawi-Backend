@@ -1,26 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateFeesPaymentDto } from './dto/create-fees-payment.dto';
 import { UpdateFeesPaymentDto } from './dto/update-fees-payment.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UniversityEntity } from 'src/Entities/university';
+import { Repository } from 'typeorm';
+import { StudentEntity } from 'src/Entities/Student';
 
 @Injectable()
 export class FeesPaymentsService {
-  create(createFeesPaymentDto: CreateFeesPaymentDto) {
-    return 'This action adds a new feesPayment';
-  }
+  constructor(
+    @InjectRepository(UniversityEntity)
+    private readonly feesPaymentRepository: Repository<UniversityEntity>,
 
-  findAll() {
-    return `This action returns all feesPayments`;
-  }
+    @InjectRepository(StudentEntity)
+    private readonly studentRepository: Repository<StudentEntity>,
+    ) {}
 
-  findOne(id: number) {
-    return `This action returns a #${id} feesPayment`;
-  }
+    async processFeesPaymnet(dto:CreateFeesPaymentDto){
+        const {feeId, registrationNumber} = dto;
 
-  update(id: number, updateFeesPaymentDto: UpdateFeesPaymentDto) {
-    return `This action updates a #${id} feesPayment`;
-  }
+        if (!registrationNumber) {
+          throw new HttpException('Registration number is required', 400);
+      }
+      const Student = await this.studentRepository.findOne({
+        where: { registrationNumber },
+        relations: ['university'],
+      });
+      if (!Student) {
+        throw new HttpException('Student not found', 404);
+      }
 
-  remove(id: number) {
-    return `This action removes a #${id} feesPayment`;
-  }
+    }
+  
 }
