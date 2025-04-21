@@ -12,6 +12,7 @@ import axios from 'axios';
 import { InstallmentsFeesPayment } from './entities/installment-payment.entity';
 import { StudentFee } from './entities/Student.entity';
 import { CreateStudentFeePaymentDto } from './dto/create-pay-fee.dto';
+import { CreateStudentFeeDto } from './dto/create-student-fee.dto';
 
 
 interface PaymentResponse {
@@ -32,6 +33,28 @@ export class FeesPaymentService {
     @InjectRepository(InstallmentsFeesPayment)
     private readonly installmentPaymentRepository: Repository<InstallmentsFeesPayment>,
   ) {}
+  async createStudentFee(dto: CreateStudentFeeDto): Promise<StudentFee> {
+    // Check if a student with the same registration number already exists
+    const existingStudent = await this.studentFeeRepository.findOne({
+      where: { registrationNumber: dto.registrationNumber },
+    });
+    if (existingStudent) {
+      throw new HttpException('Student already exists', HttpStatus.BAD_REQUEST);
+    }
+
+    // Create a new student record with default payment values:
+    const newStudentFee = this.studentFeeRepository.create({
+      registrationNumber: dto.registrationNumber,
+      studentName: dto.studentName,
+      yearOfStudy: dto.yearOfStudy,
+      university: dto.university,
+      totalFees: dto.totalFees,
+      paidAmount: 0,
+      remainingBalance: dto.totalFees, // initially all fees are unpaid
+      isFullyPaid: false,
+    });
+    return await this.studentFeeRepository.save(newStudentFee);
+  }
 
   /**
    * Records a fee payment, updates the student fee record,

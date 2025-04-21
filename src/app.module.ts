@@ -41,14 +41,19 @@ import { StudentFee } from './pay-fees/entities/Student.entity';
     //   },
     // }),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'tech-nest265',
-      database: 'paysmrt_backend',
+      type: 'postgres',                 // ← change to mysql
+      host: 'dpg-d01oar3uibrs73b0qgng-a.oregon-postgres.render.com',             // ← usually localhost on cPanel
+      port: 5432,                    // ← default MySQL port
+      username: 'paysmartuser', // ← your cPanel‑created MySQL user (check “MySQL® Users”)
+      password: 'E1HtNhmAYLn4lgcAiVsgtApR0bqaQkbz',    // ← the password you set in cPanel
+      database: 'paysmartdatabase', // ← your cPanel-created database (check “MySQL® Databases”)
       entities: [RechargeEntity,HousePayment,InstallmentPayment,TVServiceEntity,TvPackageEntity,TVsubscription,InstallmentsFeesPayment,StudentFee ], // Add all your entities
-      synchronize: true, // Set to false in production
+      synchronize: true,
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }, // Set to false in production
     }),
 
     
