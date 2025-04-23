@@ -33,31 +33,82 @@ export class CustomRechargesService {
     }
 
     // Initiates payment via PayChangu
-    async initiatePayment(amount: number, transactionId: string): Promise<PaymentResponse> {
+    // async initiatePayment(amount: number, transactionId: string): Promise<PaymentResponse> {
+    //     try {
+    //         const paymentData = {
+    //             amount,
+    //             currency: 'MWK',
+    //             // Note: Callback is not used in this flow but is still provided to the API.
+    //             callback_url: 'https://your-website.com/payment-callback',
+    //         };
+
+    //         const response = await axios.post<PaymentResponse>(
+    //             'https://api.paychangu.com/payment',
+    //             paymentData,
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
+    //                     'Content-Type': 'application/json',
+    //                 },
+    //             }
+    //         );
+
+    //         console.log('Payment API Response:', response.data);
+
+    //         const checkoutUrl = response.data?.data?.checkout_url;
+    //         if (checkoutUrl) {
+    //             return { success: true, checkout_url: checkoutUrl };
+    //         } else {
+    //             console.error('Invalid response format:', response.data);
+    //             return { success: false, message: 'Invalid response from payment API' };
+    //         }
+    //     } catch (error) {
+    //         console.error('Payment error:', error.response?.data || error.message);
+    //         return { success: false, message: error.response?.data || error.message };
+    //     }
+    // }
+    async initiatePayment(amount: number, transactionRef: string): Promise<any> {
         try {
+            // Define the payment data structure
             const paymentData = {
+                tx_ref: transactionRef,
                 amount,
                 currency: 'MWK',
-                // Note: Callback is not used in this flow but is still provided to the API.
-                callback_url: `https://callback-url.netlify.app/`,
+                callback_url: 'https://your-website.com/payment-callback', // Add your callback URL here
             };
 
+            // Define the expected response type for payment
+            interface PaymentResponse {
+                message: string;
+                status: string;
+                data: {
+                    event: string;
+                    checkout_url: string;
+                    data: {
+                        tx_ref: string;
+                        currency: string;
+                        amount: number;
+                        mode: string;
+                        status: string;
+                    };
+                };
+            }
+
+            // Send request to PayChangu API
             const response = await axios.post<PaymentResponse>(
                 'https://api.paychangu.com/payment',
                 paymentData,
                 {
                     headers: {
-                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`,
+                        Authorization: `Bearer ${process.env.PAYCHANGU_API_KEY}`, // Ensure your API key is loaded correctly
                         'Content-Type': 'application/json',
                     },
-                }
+                },
             );
 
-            console.log('Payment API Response:', response.data);
-
-            const checkoutUrl = response.data?.data?.checkout_url;
-            if (checkoutUrl) {
-                return { success: true, checkout_url: checkoutUrl };
+            // Check if the response contains a valid checkout URL
+            if (response.data && response.data.data && response.data.data.checkout_url) {
+                return { success: true, checkout_url: response.data.data.checkout_url };
             } else {
                 console.error('Invalid response format:', response.data);
                 return { success: false, message: 'Invalid response from payment API' };
