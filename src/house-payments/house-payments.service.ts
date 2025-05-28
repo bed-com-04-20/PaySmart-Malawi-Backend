@@ -41,7 +41,7 @@ export class HousePaymentsService {
     const { houseId, amount } = dto;
 
     // Find the house payment record by houseId
-    const house = await this.housePaymentRepository.findOne({ where: { id: houseId } });
+    const house = await this.housePaymentRepository.findOne({ where: { deltaNumber: houseId } });
     if (!house) {
       throw new HttpException('House not found', HttpStatus.NOT_FOUND);
     }
@@ -80,6 +80,7 @@ export class HousePaymentsService {
     await this.installmentPaymentRepository.save(installment);
 
     return {
+      houseId:house.deltaNumber,
       message: 'Payment successful',
       transactionRef,
       paidAmount: house.paidAmount,
@@ -121,7 +122,10 @@ export class HousePaymentsService {
 
       // Check if the checkout_url exists
       if (checkoutUrl) {
-        return { success: true, checkout_url: checkoutUrl };
+        return {
+          
+          success: true, 
+          checkout_url: checkoutUrl };
       } else {
         console.error('Invalid response format:', response.data);
         return { success: false, message: 'Invalid response from payment API' };
@@ -136,13 +140,15 @@ export class HousePaymentsService {
    * Retrieves the remaining balance for a house.
    */
   async getRemainingBalance(houseId: number) {
-    const house = await this.housePaymentRepository.findOne({ where: { id: houseId } });
+    const transactionRef = `TX-${Date.now()}`;
+    const house = await this.housePaymentRepository.findOne({ where: { deltaNumber: houseId } });
     if (!house) {
       throw new HttpException("House not found", HttpStatus.NOT_FOUND);
     }
 
     return {
-      houseId: house.id,
+      transactionRef,
+      houseId: house.deltaNumber,
       totalPrice: house.price,
       paidAmount: house.paidAmount,
       remainingBalance: house.price - house.paidAmount,
@@ -155,12 +161,12 @@ export class HousePaymentsService {
    */
   async getPaymentHistory(houseId: number) {
     return this.installmentPaymentRepository.find({
-      where: { house: { id: houseId } },
+      where: { house: { deltaNumber: houseId } },
       relations: ["house"], // Ensures only necessary relations are loaded
       select: {
         id: true,
         amountPaid: true,
-        house: { id: true, price: true },
+        house: { deltaNumber: true, price: true },
       },
     });
   }
@@ -169,10 +175,14 @@ export class HousePaymentsService {
    * Finds a house by its Delta number.
    */
   async getHouseByDelta(deltaNumber: number) {
+    const transactionRef = `TX-${Date.now()}`;
     const house = await this.housePaymentRepository.findOne({ where: { deltaNumber } });
     if (!house) {
       throw new NotFoundException(`House with delta number ${deltaNumber} not found.`);
     }
-    return house;
+    return{
+      transactionRef,
+      house
+    } 
   }
 }

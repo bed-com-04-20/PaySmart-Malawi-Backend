@@ -67,11 +67,8 @@ export class CustomRechargesController {
      */
     @Get('summary')
     @ApiOperation({ summary: 'Get recharge transaction summaries. Optional query parameter: serviceType (escom or waterboard)' })
-    @ApiQuery({ name: 'serviceType', type: String, required: false, description: 'Filter summaries by service type (escom|waterboard)' })
-    async getTransactionSummaries(@Query('serviceType') serviceType?: 'escom' | 'waterboard') {
-        if (serviceType) {
-            return this.customRechargesService.getRechargeHistorySummary(serviceType);
-        }
+    //@ApiQuery({ name: 'serviceType', type: String, required: false, description: 'Filter summaries by service type (escom|waterboard)' })
+    async getTransactionSummaries() {
         return this.customRechargesService.getAllRechargeSummaries();
     }
 }

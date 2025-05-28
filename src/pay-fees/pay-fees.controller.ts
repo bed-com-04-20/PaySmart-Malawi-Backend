@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { FeesPaymentService } from './pay-fees.service';
 import { CreateStudentFeePaymentDto } from './dto/create-pay-fee.dto';
 import { CreateStudentFeeDto } from './dto/create-student-fee.dto';
@@ -24,24 +24,20 @@ export class FeesPaymentController {
   }
 
   /**
-   * GET /fees-payments/:registrationNumber/balance
-   * Retrieves the current remaining balance for the student with the specified registration number.
+   * GET /fees-payments/balances
+   * Retrieves the current remaining balances for all students.
    */
-  @Get(':registrationNumber/balance')
-  async getRemainingBalance(
-    @Param('registrationNumber') registrationNumber: string,
-  ) {
-    return this.feesPaymentService.getRemainingBalance(registrationNumber);
+  @Get('balances')
+  async getRemainingBalance() {
+    return this.feesPaymentService.getRemainingBalance();
   }
 
   /**
-   * GET /fees-payments/:registrationNumber/history
-   * Retrieves the complete fee payment history for the student with the specified registration number.
+   * GET /fees-payments/history
+   * Retrieves the complete fee payment history for all students.
    */
-  @Get(':registrationNumber/history')
-  async getPaymentHistory(
-    @Param('registrationNumber') registrationNumber: string,
-  ) {
-    return this.feesPaymentService.getPaymentHistory(registrationNumber);
+  @Get('history')
+  async getPaymentHistory() {
+    return this.feesPaymentService.getPaymentHistory();
   }
 }

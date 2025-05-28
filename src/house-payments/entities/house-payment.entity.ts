@@ -1,16 +1,10 @@
-
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { InstallmentPayment } from './installmentPayment';
-
-
 
 @Entity()
 export class HousePayment {
    @PrimaryGeneratedColumn()
-   id: number;
-
-   @Column({unique: true})
-   deltaNumber: number; // Unique identifier for the house
+   deltaNumber: number; // Unique identifier and primary key for the house
 
    @Column()
    location: string;

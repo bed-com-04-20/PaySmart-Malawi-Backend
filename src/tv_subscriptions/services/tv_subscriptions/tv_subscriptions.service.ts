@@ -60,8 +60,10 @@ export class TvSubscriptionsService {
         return {
             message: 'Subscription successful',
             summary,
-            checkout_url: paymentResponse.checkout_url, // Optional: return checkout URL if needed
+            checkout_url: paymentResponse.checkout_url, 
+            tx_ref: transactionRef,  // <-- include this
         };
+        
     }
 
     /**

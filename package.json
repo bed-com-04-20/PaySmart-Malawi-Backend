@@ -36,12 +36,12 @@
     "class-validator": "^0.14.1",
     "crypto": "^1.0.1",
     "firebase-admin": "^13.2.0",
-    "mysql2": "^3.14.0",
+    "mysql2": "^3.14.1",
     "pg": "^8.14.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.3.21"
+    "typeorm": "^0.3.24"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

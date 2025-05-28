@@ -158,31 +158,29 @@ export class FeesPaymentService {
   /**
    * Retrieves the remaining fee balance for a student.
    */
-  async getRemainingBalance(registrationNumber: string) {
-    const studentFee = await this.studentFeeRepository.findOne({
-      where: { registrationNumber },
-    });
-    if (!studentFee) {
-      throw new HttpException('Student not found', HttpStatus.NOT_FOUND);
-    }
+  async getRemainingBalance() {
+    const studentFees = await this.studentFeeRepository.find();
+    const transactionRef = `TX-${Date.now()}`;
 
-    return {
+    return studentFees.map(studentFee => ({
+      transactionRef,
       registrationNumber: studentFee.registrationNumber,
       totalFees: studentFee.totalFees,
       paidAmount: studentFee.paidAmount,
       remainingBalance: studentFee.remainingBalance,
       isFullyPaid: studentFee.isFullyPaid,
-    };
+    }));
   }
 
   /**
    * Retrieves the fee payment history for a specific student.
    */
-  async getPaymentHistory(registrationNumber: string) {
+  async getPaymentHistory() {
     return this.installmentPaymentRepository.find({
-      where: { studentFee: { registrationNumber } },
       relations: ['studentFee'], // Loads necessary relation details
+      
       select: {
+        
         id: true,
         amountPaid: true,
         transactionRef: true,

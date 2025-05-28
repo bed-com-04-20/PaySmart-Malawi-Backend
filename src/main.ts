@@ -32,7 +32,7 @@ async function bootstrap() {
       credential: firebaseAdmin.credential.cert(firebaseServiceAccount),
     });
   }
-
+ app.setGlobalPrefix('paysmart')
   // 6) Swagger setup (API docs)
   const swaggerConfig = new DocumentBuilder()
     .setTitle('PaySmart Malawi Backend API')
